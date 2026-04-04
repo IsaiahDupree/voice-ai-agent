@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { SUPPORTED_LANGUAGES, type SupportedLanguageCode } from '@/lib/language-detector';
+import { getVoicesForLanguage, type VoiceProfile } from '@/lib/multilingual-voices';
 
 interface LanguageVariant {
   id: number;
@@ -24,38 +25,23 @@ interface LanguageVariant {
   updated_at?: string;
 }
 
-const ELEVENLABS_MULTILINGUAL_VOICES: Record<SupportedLanguageCode, { id: string; name: string }[]> = {
-  en: [
-    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah (Professional)' },
-    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel (Conversational)' },
-    { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam (Professional Male)' },
-  ],
-  es: [
-    { id: 'VYWJe7e3ZqYHzHqIkqxR', name: 'Ana (Spanish - Professional)' },
-    { id: 'G3YhwqYXKcKqCZDBwSgN', name: 'Carlos (Spanish - Warm)' },
-  ],
-  fr: [
-    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Marie (French - Professional)' },
-    { id: 'CYw3kZ02Hs0563khs1Fj', name: 'Pierre (French - Business)' },
-  ],
-  de: [
-    { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Anna (German - Professional)' },
-    { id: 'iP95p4xoKVk53GoZ742B', name: 'Klaus (German - Authoritative)' },
-  ],
-  pt: [
-    { id: 'EHGtRhaMNdZHrFXdLwrk', name: 'Maria (Portuguese - Friendly)' },
-    { id: 'onwK4e9ZLuTAKqWW03F9', name: 'João (Portuguese - Professional)' },
-  ],
-  zh: [
-    { id: 'XrExE9yKIg1WjnnlVkGX', name: 'Li (Chinese - Professional)' },
-  ],
-  hi: [
-    { id: 'zIq6HTgd4z9W9T4G3h8L', name: 'Priya (Hindi - Friendly)' },
-  ],
-  ja: [
-    { id: 'VHlPsm8qLq1T9z4J3h8L', name: 'Yuki (Japanese - Professional)' },
-  ],
-};
+/**
+ * Convert VoiceProfile to dropdown format
+ */
+function voiceProfileToDropdown(voice: VoiceProfile): { id: string; name: string } {
+  return {
+    id: voice.id,
+    name: `${voice.name} (${voice.gender === 'female' ? 'F' : 'M'}) - ${voice.tone}`,
+  };
+}
+
+/**
+ * Get voice dropdown options for a language
+ */
+function getVoiceOptions(languageCode: SupportedLanguageCode): { id: string; name: string }[] {
+  const voices = getVoicesForLanguage(languageCode);
+  return voices.map(voiceProfileToDropdown);
+}
 
 export default function LanguageVariantsPage() {
   const [variants, setVariants] = useState<LanguageVariant[]>([]);
@@ -339,12 +325,19 @@ export default function LanguageVariantsPage() {
                 >
                   <option value="">Select voice...</option>
                   {formData.language_code &&
-                    ELEVENLABS_MULTILINGUAL_VOICES[formData.language_code]?.map((voice) => (
+                    getVoiceOptions(formData.language_code).map((voice) => (
                       <option key={voice.id} value={voice.id}>
                         {voice.name}
                       </option>
                     ))}
                 </select>
+                {formData.voice_id && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {getVoicesForLanguage(formData.language_code as SupportedLanguageCode)
+                      .find((v) => v.id === formData.voice_id)
+                      ?.description}
+                  </p>
+                )}
               </div>
 
               <div>

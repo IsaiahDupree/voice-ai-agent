@@ -439,15 +439,305 @@ ORDER BY conversion_rate DESC;
 - Don't set stability too low (< 0.3) for business calls
 - Don't change voice mid-campaign (creates inconsistency)
 
+## Multilingual Voices
+
+Voice AI Agent V2 supports 8 languages with dedicated native voices for each. Language detection automatically switches voices mid-call when a non-English speaker is detected.
+
+### Supported Languages
+
+| Language | Code | Native Name | Primary Voice | Gender | Tone |
+|----------|------|-------------|---------------|--------|------|
+| English | en | English | Bella | Female | Professional-Friendly |
+| Spanish | es | Español | Ana | Female | Professional |
+| French | fr | Français | Marie | Female | Professional |
+| German | de | Deutsch | Anna | Female | Professional |
+| Portuguese | pt | Português | Maria | Female | Friendly |
+| Chinese | zh | 中文 | Li | Female | Professional |
+| Hindi | hi | हिन्दी | Priya | Female | Friendly |
+| Japanese | ja | 日本語 | Yuki | Female | Professional |
+
+### Spanish (Español)
+
+#### Ana (Primary) - Professional
+- **Voice ID:** `VYWJe7e3ZqYHzHqIkqxR`
+- **Gender:** Female
+- **Accent:** Neutral Spanish (works for both Spain and Latin America)
+- **Tone:** Professional, clear, warm
+- **Best for:** Sales, appointments, customer support
+- **Settings:** Stability: 0.5, Similarity: 0.75
+
+**When to use:**
+- General-purpose Spanish communication
+- Professional service calls (medical, legal, financial)
+- B2B sales to Spanish-speaking markets
+
+#### Carlos (Alternative) - Warm & Friendly
+- **Voice ID:** `G3YhwqYXKcKqCZDBwSgN`
+- **Gender:** Male
+- **Accent:** Neutral Spanish
+- **Tone:** Warm, friendly, patient
+- **Best for:** Support, healthcare, education
+
+**When to use:**
+- Customer support (handling sensitive topics)
+- Healthcare appointment scheduling
+- Educational/training calls
+
+### French (Français)
+
+#### Marie (Primary) - Professional
+- **Voice ID:** `MF3mGyEYCl7XYWbV9V6O`
+- **Gender:** Female
+- **Accent:** Parisian French
+- **Tone:** Professional, polished
+- **Best for:** Sales, appointments, customer support
+- **Settings:** Stability: 0.5, Similarity: 0.75
+
+**When to use:**
+- Professional communication in France/French-speaking regions
+- B2B sales
+- Service booking calls
+
+#### Pierre (Alternative) - Authoritative
+- **Voice ID:** `CYw3kZ02Hs0563khs1Fj`
+- **Gender:** Male
+- **Accent:** Standard French
+- **Tone:** Professional, authoritative
+- **Best for:** B2B sales, financial services, legal
+
+**When to use:**
+- Executive-level communication
+- Financial services outreach
+- Legal/compliance calls
+
+### German (Deutsch)
+
+#### Anna (Primary) - Professional
+- **Voice ID:** `TxGEqnHWrfWFTfGW9XjX`
+- **Gender:** Female
+- **Accent:** Standard Hochdeutsch
+- **Tone:** Professional, clear
+- **Best for:** Sales, appointments, customer support
+- **Settings:** Stability: 0.5, Similarity: 0.75
+
+**When to use:**
+- General-purpose German communication
+- Professional services (medical, legal, tech)
+- Customer support
+
+#### Klaus (Alternative) - Authoritative
+- **Voice ID:** `iP95p4xoKVk53GoZ742B`
+- **Gender:** Male
+- **Accent:** Standard German
+- **Tone:** Authoritative, commanding
+- **Best for:** B2B sales, financial services, legal
+
+**When to use:**
+- B2B outreach
+- Financial/banking services
+- Authority-driven messaging
+
+### Portuguese (Português)
+
+#### Maria (Primary) - Friendly
+- **Voice ID:** `EHGtRhaMNdZHrFXdLwrk`
+- **Gender:** Female
+- **Accent:** Brazilian Portuguese
+- **Tone:** Friendly, warm
+- **Best for:** Sales, support, appointments
+- **Settings:** Stability: 0.5, Similarity: 0.75
+
+**When to use:**
+- Brazilian market outreach
+- Customer support
+- Appointment scheduling
+
+#### João (Alternative) - Professional
+- **Voice ID:** `onwK4e9ZLuTAKqWW03F9`
+- **Gender:** Male
+- **Accent:** Brazilian Portuguese
+- **Tone:** Professional
+- **Best for:** B2B sales, professional services
+
+**When to use:**
+- B2B sales in Brazil
+- Professional service calls
+
+### Chinese (中文)
+
+#### Li (Primary) - Professional
+- **Voice ID:** `XrExE9yKIg1WjnnlVkGX`
+- **Gender:** Female
+- **Accent:** Standard Mandarin
+- **Tone:** Professional, clear
+- **Best for:** Sales, support, appointments
+- **Settings:** Stability: 0.6 (higher for tonal accuracy), Similarity: 0.75
+
+**When to use:**
+- General Mandarin communication
+- China market outreach
+- Professional services
+
+**Note:** Stability is set higher (0.6) for better tonal accuracy in Mandarin.
+
+### Hindi (हिन्दी)
+
+#### Priya (Primary) - Friendly
+- **Voice ID:** `zIq6HTgd4z9W9T4G3h8L`
+- **Gender:** Female
+- **Accent:** Standard Hindi
+- **Tone:** Friendly, clear
+- **Best for:** Sales, support, appointments
+- **Settings:** Stability: 0.5, Similarity: 0.75
+
+**When to use:**
+- India market outreach
+- Customer support
+- Appointment scheduling
+
+### Japanese (日本語)
+
+#### Yuki (Primary) - Professional
+- **Voice ID:** `VHlPsm8qLq1T9z4J3h8L`
+- **Gender:** Female
+- **Accent:** Standard Tokyo dialect
+- **Tone:** Professional, polite
+- **Best for:** Sales, support, appointments
+- **Settings:** Stability: 0.6 (higher for pitch accent accuracy), Similarity: 0.75
+
+**When to use:**
+- Japan market outreach
+- Professional services
+- Customer support
+
+**Note:** Stability is set higher (0.6) for better pitch accent accuracy in Japanese.
+
+### How Multilingual Detection Works
+
+1. **First 2-3 seconds:** Caller speaks → Deepgram transcribes
+2. **Language detection:** GPT-4o-mini analyzes transcript snippet
+3. **Confidence check:** If confidence > 80% and language ≠ English
+4. **Auto-switch:** System switches to matching language assistant:
+   - ElevenLabs voice → native language voice
+   - Deepgram STT → language-specific model (e.g., `nova-2-es` for Spanish)
+   - System prompt → translated prompt
+5. **Seamless continuation:** Call continues in detected language
+
+### Configuration
+
+**Dashboard:** `/dashboard/language-variants`
+
+**Steps:**
+1. Enter base assistant ID (your English assistant)
+2. Click "+ Add Language Variant"
+3. Select language (es, fr, de, pt, zh, hi, ja)
+4. Choose voice from dropdown (pre-populated with recommended voices)
+5. Enter translated system prompt
+6. Create variant
+
+**Result:** When a caller speaks in the selected language, the assistant automatically switches to the configured variant.
+
+### Testing Multilingual Detection
+
+**Test UI:**
+Dashboard → Language Variants → "Test Language Detection" button
+
+**Test via API:**
+```bash
+curl -X POST http://localhost:3000/api/language/detect \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Hola, ¿cómo estás?",
+    "currentLanguage": "en"
+  }'
+
+# Response:
+{
+  "language": "es",
+  "confidence": 95,
+  "languageName": "Spanish",
+  "shouldSwitch": true
+}
+```
+
+### Multilingual Voice Pricing
+
+**ElevenLabs Model:** `eleven_multilingual_v2` (used for all non-English languages)
+
+**No additional cost** - Multilingual v2 is included in all ElevenLabs plans at the same character rate as English voices.
+
+**Character usage estimate by language:**
+- Romance languages (ES, FR, PT): ~1.1x English (slightly longer translations)
+- German: ~1.2x English (compound words)
+- Chinese: ~0.8x English (more concise)
+- Japanese: ~1.0x English
+- Hindi: ~1.1x English
+
+### Best Practices
+
+#### ✅ Do's
+
+- Test each language variant with native speakers before production
+- Use translated system prompts (don't rely on LLM to auto-translate mid-call)
+- Set confidence threshold to 80%+ (avoids false positives)
+- Configure STT language models per language (e.g., `nova-2-es` for Spanish)
+- Keep prompts culturally appropriate (not just literal translations)
+
+#### ❌ Don'ts
+
+- Don't use English voices for non-English calls (sounds unnatural)
+- Don't set confidence threshold below 70% (causes false switches)
+- Don't forget to configure STT language (Deepgram needs language-specific models)
+- Don't assume one accent fits all (e.g., European vs Latin American Spanish)
+- Don't launch without testing pronunciation of key terms (company names, products)
+
+### Troubleshooting
+
+**Issue: Language not detected**
+
+**Causes:**
+- Caller spoke too briefly (< 5 words)
+- Mixed language (Spanglish, Franglais)
+- Heavy accent
+
+**Solution:**
+```json
+{
+  "confidenceThreshold": 70  // Lower threshold (default: 80)
+}
+```
+
+**Issue: False language detection**
+
+**Cause:** Background noise, caller name in another language
+
+**Solution:**
+```json
+{
+  "confidenceThreshold": 90  // Higher threshold for conservative switching
+}
+```
+
+**Issue: Voice mispronounces words in target language**
+
+**Solution:** Use phonetic spelling in system prompt:
+```
+Spanish: "Acme" → "Akme"
+French: "Support" → "Soo-port"
+German: "Service" → "Zer-vees"
+```
+
 ## Next Steps
 
 - [Persona Builder Guide](./PERSONA-GUIDE.md) - Create personas with ElevenLabs voices
 - [Campaign Setup Guide](./CAMPAIGN-GUIDE.md) - Launch campaigns
 - [Troubleshooting](./TROUBLESHOOTING.md) - Fix voice issues
+- [Language Variants Dashboard](./app/dashboard/language-variants) - Configure multilingual assistants
 
 ## Resources
 
 - **ElevenLabs Dashboard**: https://elevenlabs.io/speech-synthesis
 - **Voice Library**: https://elevenlabs.io/voice-library
+- **Multilingual Voices**: https://elevenlabs.io/voice-library?language=multilingual
 - **API Docs**: https://docs.elevenlabs.io
 - **Pricing**: https://elevenlabs.io/pricing

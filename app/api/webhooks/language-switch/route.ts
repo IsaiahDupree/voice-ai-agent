@@ -13,14 +13,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import Vapi from '@vapi-ai/server-sdk';
+import { vapiClient } from '@/lib/vapi';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-const vapi = new Vapi({ token: process.env.VAPI_API_KEY! });
 
 interface LanguageSwitchRequest {
   call_id: string;

@@ -457,6 +457,428 @@ Run 100 calls to each variant, then compare:
 - Average call duration
 - Booking conversion rate
 
+## Multilingual Personas & Auto-Detection
+
+Voice AI Agent V2 supports **8 languages** with automatic language detection and switching. When a caller speaks in a non-English language, the system automatically switches to a matching language variant.
+
+### Supported Languages
+
+| Language | Code | Native Name | Auto-Detection | Recommended Voice |
+|----------|------|-------------|----------------|-------------------|
+| English | en | English | Default | Bella, Rachel, Adam |
+| Spanish | es | Español | ✅ Auto | Ana (F), Carlos (M) |
+| French | fr | Français | ✅ Auto | Marie (F), Pierre (M) |
+| German | de | Deutsch | ✅ Auto | Anna (F), Klaus (M) |
+| Portuguese | pt | Português | ✅ Auto | Maria (F), João (M) |
+| Chinese | zh | 中文 | ✅ Auto | Li (F) |
+| Hindi | hi | हिन्दी | ✅ Auto | Priya (F) |
+| Japanese | ja | 日本語 | ✅ Auto | Yuki (F) |
+
+### How Auto-Detection Works
+
+1. **Caller speaks** → First 2-3 seconds transcribed by Deepgram
+2. **Language detected** → GPT-4o-mini analyzes transcript
+3. **Confidence check** → If confidence > 80% and language ≠ English
+4. **Auto-switch** → System switches to language variant:
+   - Voice → Native language voice
+   - STT model → Language-specific Deepgram model
+   - System prompt → Translated prompt
+5. **Seamless continuation** → Call proceeds in detected language
+
+**Example flow:**
+```
+Caller: "¿Hola? ¿Hablas español?"
+[Detection: Spanish, 95% confidence]
+→ Switch to Spanish variant
+Agent (Spanish): "¡Hola! Sí, hablo español. ¿En qué puedo ayudarte?"
+```
+
+### Creating Multilingual Persona Variants
+
+#### Step 1: Create Base English Persona
+
+```bash
+curl -X POST /api/personas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Appointment Setter (English)",
+    "voice_id": "EXAVITQu4vr4xnSDxMaL",
+    "system_prompt": "You are a friendly appointment setter...",
+    "first_message": "Hi, this is Sarah. How can I help you today?",
+    "model": "gpt-4o"
+  }'
+
+# Response includes base_assistant_id (e.g., "asst_abc123")
+```
+
+#### Step 2: Configure Language Variants
+
+Navigate to **Dashboard → Language Variants** and add each language:
+
+**Spanish Variant:**
+```json
+{
+  "base_assistant_id": "asst_abc123",
+  "language_code": "es",
+  "voice_id": "VYWJe7e3ZqYHzHqIkqxR",
+  "system_prompt": "Eres una amigable programadora de citas...",
+  "first_message": "Hola, soy Sarah. ¿En qué puedo ayudarte hoy?",
+  "stt_language": "es",
+  "tts_language": "es"
+}
+```
+
+**French Variant:**
+```json
+{
+  "base_assistant_id": "asst_abc123",
+  "language_code": "fr",
+  "voice_id": "MF3mGyEYCl7XYWbV9V6O",
+  "system_prompt": "Vous êtes une planificatrice de rendez-vous sympathique...",
+  "first_message": "Bonjour, je suis Sarah. Comment puis-je vous aider aujourd'hui?",
+  "stt_language": "fr",
+  "tts_language": "fr"
+}
+```
+
+#### Step 3: Test Language Detection
+
+Dashboard → Language Variants → **"Test Language Detection"**
+
+```json
+{
+  "text": "¿Hola, cómo estás?",
+  "currentLanguage": "en"
+}
+
+// Response:
+{
+  "language": "es",
+  "confidence": 95,
+  "languageName": "Spanish",
+  "shouldSwitch": true
+}
+```
+
+### Multilingual Voice Configuration
+
+#### Spanish (Español)
+
+**Ana (Primary - Professional)**
+- Voice ID: `VYWJe7e3ZqYHzHqIkqxR`
+- Gender: Female
+- Tone: Professional, clear
+- Best for: Sales, appointments, customer service
+
+**Carlos (Alternative - Warm)**
+- Voice ID: `G3YhwqYXKcKqCZDBwSgN`
+- Gender: Male
+- Tone: Warm, friendly
+- Best for: Support, healthcare, education
+
+#### French (Français)
+
+**Marie (Primary - Professional)**
+- Voice ID: `MF3mGyEYCl7XYWbV9V6O`
+- Gender: Female
+- Accent: Parisian
+- Best for: Professional communication
+
+**Pierre (Alternative - Authoritative)**
+- Voice ID: `CYw3kZ02Hs0563khs1Fj`
+- Gender: Male
+- Tone: Business-focused
+- Best for: B2B sales, financial services
+
+#### German (Deutsch)
+
+**Anna (Primary - Professional)**
+- Voice ID: `TxGEqnHWrfWFTfGW9XjX`
+- Gender: Female
+- Accent: Standard Hochdeutsch
+- Best for: General-purpose German
+
+**Klaus (Alternative - Authoritative)**
+- Voice ID: `iP95p4xoKVk53GoZ742B`
+- Gender: Male
+- Tone: Commanding
+- Best for: B2B, financial services
+
+#### Portuguese (Português)
+
+**Maria (Primary - Friendly)**
+- Voice ID: `EHGtRhaMNdZHrFXdLwrk`
+- Gender: Female
+- Accent: Brazilian Portuguese
+- Best for: Customer service, sales
+
+**João (Alternative - Professional)**
+- Voice ID: `onwK4e9ZLuTAKqWW03F9`
+- Gender: Male
+- Tone: Professional
+- Best for: B2B sales
+
+#### Chinese (中文)
+
+**Li (Primary - Professional)**
+- Voice ID: `XrExE9yKIg1WjnnlVkGX`
+- Gender: Female
+- Accent: Standard Mandarin
+- Best for: General Mandarin communication
+- **Note:** Stability set to 0.6 for tonal accuracy
+
+#### Hindi (हिन्दी)
+
+**Priya (Primary - Friendly)**
+- Voice ID: `zIq6HTgd4z9W9T4G3h8L`
+- Gender: Female
+- Tone: Friendly, clear
+- Best for: India market, customer support
+
+#### Japanese (日本語)
+
+**Yuki (Primary - Professional)**
+- Voice ID: `VHlPsm8qLq1T9z4J3h8L`
+- Gender: Female
+- Accent: Standard Tokyo dialect
+- Best for: Japan market, professional services
+- **Note:** Stability set to 0.6 for pitch accent accuracy
+
+### System Prompt Translation Best Practices
+
+#### ✅ Do's
+
+**1. Culturally adapt, don't just translate:**
+
+❌ Literal translation:
+```
+"Hi, I'm calling to discuss your cloud infrastructure needs."
+→ "Hola, estoy llamando para discutir sus necesidades de infraestructura en la nube."
+```
+
+✅ Cultural adaptation:
+```
+"Hi, I'm calling to discuss your cloud infrastructure needs."
+→ "Buenos días, le llamo para conocer cómo podemos ayudarle con su infraestructura tecnológica."
+(More formal in Spanish business context)
+```
+
+**2. Adjust formality levels:**
+
+- **Spanish**: Use "usted" (formal) for B2B, "tú" (informal) for consumer
+- **German**: Use "Sie" (formal) for professional contexts
+- **French**: Use "vous" (formal) for business, "tu" (informal) for casual
+- **Japanese**: Use keigo (敬語) for professional politeness
+
+**3. Handle company/product names:**
+
+Add phonetic pronunciation in all variants:
+
+```
+English: "I'm calling from Acme Corp about our SaaS platform."
+Spanish: "Le llamo de Acme Corp (pronunciado 'Ak-mee') sobre nuestra plataforma SaaS."
+French: "J'appelle de Acme Corp (prononcé 'Ak-mee') concernant notre plateforme SaaS."
+```
+
+**4. Localize greetings by time of day:**
+
+```javascript
+// English
+"Good morning" (6am-12pm), "Good afternoon" (12pm-5pm), "Good evening" (5pm-9pm)
+
+// Spanish
+"Buenos días" (6am-2pm), "Buenas tardes" (2pm-8pm), "Buenas noches" (8pm-6am)
+
+// French
+"Bonjour" (6am-6pm), "Bonsoir" (6pm-6am)
+```
+
+#### ❌ Don'ts
+
+- Don't use Google Translate for system prompts (misses cultural nuances)
+- Don't assume one accent fits all regions (European vs Latin American Spanish)
+- Don't forget to localize numbers, dates, times (MM/DD vs DD/MM)
+- Don't use slang unless appropriate for brand voice
+- Don't mix languages mid-sentence (except brand names)
+
+### Confidence Threshold Tuning
+
+**Default: 80%** - Balanced false positive vs false negative rate
+
+**Adjust per use case:**
+
+```json
+{
+  "confidenceThreshold": 90  // Conservative (fewer switches, fewer errors)
+}
+```
+
+**Use conservative (90%) when:**
+- False switches are costly (e.g., emergency services)
+- Callers may use mixed language (bilingual markets)
+- Brand requires native-only interactions
+
+```json
+{
+  "confidenceThreshold": 70  // Aggressive (more switches, more coverage)
+}
+```
+
+**Use aggressive (70%) when:**
+- Maximizing multilingual coverage is priority
+- Callers clearly prefer their native language
+- Quick switch-back is easy if wrong
+
+**Mixed language example:**
+
+```
+Caller: "Hi, I need help con mi cuenta."
+(English + Spanish: "with my account")
+
+Confidence: ~65% Spanish
+
+Threshold 80%: No switch (stays English)
+Threshold 70%: Switch to Spanish
+```
+
+### Testing Multilingual Personas
+
+#### Test Script Template
+
+**1. Language detection accuracy:**
+```bash
+# Test Spanish detection
+curl -X POST /api/language/detect \
+  -H "Content-Type: application/json" \
+  -d '{"text": "¿Hola, cómo estás?", "currentLanguage": "en"}'
+
+# Expected: language=es, confidence>80, shouldSwitch=true
+```
+
+**2. Full call flow test:**
+```
+Test Case: Spanish caller
+1. Start call in English
+2. Caller speaks: "Hola, ¿hablas español?"
+3. Verify: Assistant switches to Spanish variant
+4. Verify: Voice changes to Ana/Carlos
+5. Verify: Responses are in Spanish
+6. Verify: Calendar booking works in Spanish
+```
+
+**3. Pronunciation test:**
+```
+Test words in each language:
+- Company name
+- Product names
+- Key features
+- Common questions
+
+Listen for mispronunciations and fix with phonetic spelling
+```
+
+#### Common Issues
+
+**Issue: Language not detected**
+
+✅ **Solution:**
+- Caller spoke too briefly (< 5 words)
+- Lower confidence threshold to 70%
+- Test with: `POST /api/language/detect`
+
+**Issue: False detection (wrong language)**
+
+✅ **Solution:**
+- Raise confidence threshold to 90%
+- Check for background noise contamination
+- Verify transcript quality in logs
+
+**Issue: Voice mispronounces words**
+
+✅ **Solution:**
+Use phonetic spelling in system prompt:
+```
+Spanish: "Acme" → "Akme"
+French: "Support" → "Soo-port"
+German: "Service" → "Zer-vees"
+Chinese: Use pinyin for English words
+```
+
+### Multi-Language Persona Example
+
+**English Base:**
+```json
+{
+  "name": "Healthcare Appointment Setter",
+  "voice_id": "EXAVITQu4vr4xnSDxMaL",
+  "system_prompt": "You are a friendly healthcare appointment scheduler. Ask for patient name, date preference, and reason for visit. Be patient and empathetic.",
+  "first_message": "Hi, this is Sarah from City Health Clinic. How can I help you today?"
+}
+```
+
+**Spanish Variant:**
+```json
+{
+  "language_code": "es",
+  "voice_id": "VYWJe7e3ZqYHzHqIkqxR",
+  "system_prompt": "Eres una amable coordinadora de citas médicas. Pregunta por el nombre del paciente, fecha preferida, y motivo de la visita. Sé paciente y empática. Usa 'usted' (formal).",
+  "first_message": "Hola, soy Sarah de la Clínica de Salud City. ¿En qué puedo ayudarle?"
+}
+```
+
+**French Variant:**
+```json
+{
+  "language_code": "fr",
+  "voice_id": "MF3mGyEYCl7XYWbV9V6O",
+  "system_prompt": "Vous êtes une coordinatrice de rendez-vous médicaux sympathique. Demandez le nom du patient, la date préférée et la raison de la visite. Soyez patiente et empathique. Utilisez 'vous' (formel).",
+  "first_message": "Bonjour, je suis Sarah de la Clinique de Santé City. Comment puis-je vous aider aujourd'hui?"
+}
+```
+
+### API Reference
+
+**Create language variant:**
+```bash
+POST /api/assistants/{base_assistant_id}/language-variants
+{
+  "language_code": "es",
+  "vapi_assistant_id": "asst_xyz789",
+  "voice_id": "VYWJe7e3ZqYHzHqIkqxR",
+  "system_prompt_template": "...",
+  "stt_language": "es",
+  "tts_language": "es",
+  "tenant_id": "default"
+}
+```
+
+**List language variants:**
+```bash
+GET /api/assistants/{base_assistant_id}/language-variants?tenant_id=default
+```
+
+**Delete language variant:**
+```bash
+DELETE /api/assistants/{base_assistant_id}/language-variants?language_code=es&tenant_id=default
+```
+
+**Test language detection:**
+```bash
+POST /api/language/detect
+{
+  "text": "¿Hola, cómo estás?",
+  "confidenceThreshold": 80,
+  "currentLanguage": "en"
+}
+```
+
+### Resources
+
+- **ElevenLabs Multilingual Voices**: [ELEVENLABS-GUIDE.md](./ELEVENLABS-GUIDE.md#multilingual-voices)
+- **Voice Library**: https://elevenlabs.io/voice-library?language=multilingual
+- **Language Variants Dashboard**: `/dashboard/language-variants`
+- **Deepgram Language Models**: https://developers.deepgram.com/docs/language
+
 ## Compliance Checklist
 
 Before deploying a persona for outbound calls:

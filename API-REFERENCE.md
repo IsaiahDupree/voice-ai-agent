@@ -198,6 +198,298 @@ Get call transcript
 }
 ```
 
+### DTMF Menus
+
+DTMF (Dual-Tone Multi-Frequency) menu endpoints for interactive voice response (IVR) configuration.
+
+#### GET /api/dtmf/menus
+List all DTMF menus
+
+**Query Parameters:**
+- `tenant_id` (optional): Filter by tenant
+- `active` (optional): Filter by active status
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "tenant_id": "default",
+      "name": "Main IVR Menu",
+      "description": "Primary customer service menu",
+      "active": true,
+      "created_at": "2026-03-28T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### POST /api/dtmf/menus
+Create new DTMF menu
+
+**Request Body:**
+```json
+{
+  "name": "Appointment Confirmation Menu",
+  "description": "Menu for confirming/rescheduling appointments",
+  "menu_tree": {
+    "root": {
+      "message": "Press 1 to confirm, 2 to reschedule, 3 for more options",
+      "options": {
+        "1": {
+          "action": "webhook",
+          "destination": "/api/tools/confirmAppointment",
+          "message": "Your appointment is confirmed"
+        },
+        "2": {
+          "action": "menu",
+          "node_id": "reschedule_menu"
+        },
+        "3": {
+          "action": "transfer",
+          "destination": "+15551234567",
+          "message": "Transferring to a representative"
+        }
+      }
+    },
+    "reschedule_menu": {
+      "message": "Press 1 for tomorrow, 2 for next week",
+      "options": {
+        "1": {
+          "action": "webhook",
+          "destination": "/api/tools/rescheduleTomorrow"
+        },
+        "2": {
+          "action": "webhook",
+          "destination": "/api/tools/rescheduleNextWeek"
+        }
+      }
+    }
+  },
+  "timeout_seconds": 10,
+  "max_retries": 3,
+  "invalid_message": "Invalid selection. Please try again.",
+  "timeout_message": "I didn't hear your selection."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "tenant_id": "default",
+    "name": "Appointment Confirmation Menu",
+    "menu_tree": { ... },
+    "timeout_seconds": 10,
+    "max_retries": 3,
+    "active": true,
+    "created_at": "2026-03-28T10:00:00Z"
+  }
+}
+```
+
+#### GET /api/dtmf/menus/:id
+Get DTMF menu by ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Appointment Confirmation Menu",
+    "menu_tree": {
+      "root": { ... }
+    },
+    "timeout_seconds": 10,
+    "max_retries": 3,
+    "active": true
+  }
+}
+```
+
+#### PUT /api/dtmf/menus/:id
+Update DTMF menu
+
+**Request Body:**
+```json
+{
+  "menu_tree": {
+    "root": { ... }
+  },
+  "timeout_seconds": 15,
+  "active": true
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "updated_at": "2026-03-28T11:00:00Z"
+  }
+}
+```
+
+#### DELETE /api/dtmf/menus/:id
+Delete DTMF menu
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Menu deleted successfully"
+}
+```
+
+#### POST /api/dtmf/validate
+Validate DTMF menu tree structure
+
+**Request Body:**
+```json
+{
+  "menu_tree": {
+    "root": {
+      "message": "Press 1",
+      "options": {
+        "1": {
+          "action": "transfer",
+          "destination": "+15551234567"
+        }
+      }
+    }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "valid": true,
+  "errors": []
+}
+```
+
+**Response (invalid tree):**
+```json
+{
+  "valid": false,
+  "errors": [
+    "Node \"root\" references non-existent node \"missing_node\"",
+    "Transfer action in node \"menu1\" key \"1\" missing destination",
+    "Invalid DTMF key \"a\" in node \"root\". Must be 0-9, *, or #"
+  ]
+}
+```
+
+#### POST /api/tools/handleDTMF
+Process DTMF keypress (Vapi function tool)
+
+**Request Body:**
+```json
+{
+  "call_id": "vapi-call-123",
+  "menu_id": 1,
+  "keypress": "1",
+  "session_state": {
+    "current_node": "root",
+    "collected_input": {},
+    "retry_count": 0
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "valid": true,
+  "action": {
+    "action": "webhook",
+    "destination": "/api/tools/confirmAppointment",
+    "message": "Your appointment is confirmed"
+  },
+  "message": "Your appointment is confirmed",
+  "session_state": {
+    "current_node": "root",
+    "retry_count": 0,
+    "last_keypress_at": "2026-03-28T10:00:00Z"
+  }
+}
+```
+
+**Response (invalid keypress):**
+```json
+{
+  "valid": false,
+  "action": null,
+  "message": "Invalid selection. Please try again.",
+  "session_state": {
+    "current_node": "root",
+    "retry_count": 1
+  }
+}
+```
+
+### DTMF Action Types
+
+| Action | Description | Required Fields | Example |
+|--------|-------------|-----------------|---------|
+| `transfer` | Transfer call to phone number | `destination` (phone number) | `{ "action": "transfer", "destination": "+15551234567", "message": "Transferring..." }` |
+| `menu` | Navigate to another menu node | `node_id` | `{ "action": "menu", "node_id": "support_menu" }` |
+| `collect_input` | Collect keypad input (PIN, account number) | `type` (`pin`, `account_number`, `numeric`, `confirmation`) | `{ "action": "collect_input", "type": "pin", "length": 4 }` |
+| `webhook` | Call external webhook | `destination` (URL) | `{ "action": "webhook", "destination": "https://api.example.com/hook" }` |
+| `end_call` | End the call | None | `{ "action": "end_call", "message": "Goodbye" }` |
+
+### DTMF Input Types
+
+| Type | Description | Validation | Example Use Case |
+|------|-------------|------------|------------------|
+| `pin` | 4-8 digit PIN | Length: 4-8 digits | Security verification |
+| `account_number` | 8-16 digit account number | Length: 8-16 digits | Account lookup |
+| `numeric` | Generic numeric input | Any length (configurable) | Reference numbers |
+| `confirmation` | Yes/No confirmation | Must be "1" or "2" | Appointment confirmation |
+
+### DTMF Menu Tree Structure
+
+```typescript
+interface DTMFMenuNode {
+  message: string;               // Message to play when entering this node
+  options?: {                    // Keypress options
+    [key: string]: DTMFAction;   // Key must be 0-9, *, or #
+  };
+  timeout_message?: string;      // Custom timeout message for this node
+  invalid_message?: string;      // Custom invalid key message for this node
+}
+
+interface DTMFAction {
+  action: 'transfer' | 'menu' | 'collect_input' | 'end_call' | 'webhook';
+  destination?: string;          // Phone number (transfer) or URL (webhook)
+  node_id?: string;              // Target node ID (menu action)
+  type?: 'account_number' | 'pin' | 'numeric' | 'confirmation';
+  length?: number;               // Expected input length
+  min_length?: number;           // Minimum input length
+  max_length?: number;           // Maximum input length
+  message?: string;              // Confirmation message
+  metadata?: Record<string, unknown>;
+}
+```
+
+### DTMF Best Practices
+
+1. **Keep menus shallow**: Max 3 levels deep
+2. **Limit options**: 5-7 options per menu (cognitive load)
+3. **Use star (*) for help**: Standard convention
+4. **Use hash (#) for back/repeat**: Standard convention
+5. **Always provide timeout handling**: Set `timeout_seconds` to 8-12 seconds
+6. **Test circular references**: Use `/api/dtmf/validate` before deployment
+7. **Provide escape hatches**: Always include option to transfer to human (e.g., "0" for operator)
+
 ### Health
 
 #### GET /api/health
