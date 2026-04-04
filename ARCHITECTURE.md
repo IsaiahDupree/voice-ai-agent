@@ -231,6 +231,75 @@ All webhooks follow idempotent processing:
 6. Log webhook to webhook_logs
 7. Return 200 OK
 
+### Real-Time Transcript Streaming Flow (F113-F120)
+
+```
+┌──────────────┐         ┌─────────────────┐        ┌──────────────────┐
+│   Vapi.ai    │         │  Next.js API    │        │    Supabase      │
+│  (Call in    │         │  /api/webhooks  │        │  live_transcripts│
+│  Progress)   │         │  /transcript    │        │     table        │
+└──────┬───────┘         └────────┬────────┘        └────────┬─────────┘
+       │                          │                          │
+       │ 1. Transcript chunk      │                          │
+       │ (speaker, text, time)    │                          │
+       ├─────────────────────────>│                          │
+       │                          │                          │
+       │                          │ 2. INSERT chunk          │
+       │                          ├─────────────────────────>│
+       │                          │                          │
+       │                          │                          │ 3. Realtime
+       │                          │                          │ broadcast
+       │                          │                          │ (< 100ms)
+       │                          │                          │
+       │                          │                          │
+┌──────┴───────┐         ┌────────┴────────┐        ┌────────┴─────────┐
+│  Dashboard   │<────────│ SSE Endpoint    │<───────│ Supabase         │
+│  (Browser)   │ 4. SSE  │ /api/transcripts│        │ Realtime Channel │
+│              │ stream  │ /live/:callId   │        │                  │
+└──────┬───────┘         └─────────────────┘        └──────────────────┘
+       │
+       │ 5. Render in LiveTranscriptDrawer
+       │ - Speaker labels (agent/caller)
+       │ - Sentiment indicators
+       │ - Auto-scroll to latest
+       │ - Call stage visualization
+       │
+       v
+┌──────────────────────────────────────────────────────────────┐
+│                  Live Call Dashboard                         │
+│                                                              │
+│  ┌────────────────────────────┐  ┌──────────────────────┐  │
+│  │  LiveCallsPanel            │  │ LiveTranscriptDrawer │  │
+│  │  - Active calls (2s poll)  │  │ - Real-time chunks   │  │
+│  │  - Green pulsing indicator │  │ - Sentiment bar      │  │
+│  │  - Duration counter        │  │ - Call stage flow    │  │
+│  └────────────────────────────┘  └──────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Latency breakdown (F120):**
+- Vapi webhook → API receive: < 100ms
+- Database INSERT: < 300ms
+- Supabase Realtime broadcast: < 500ms
+- SSE delivery to browser: < 100ms
+- **Total end-to-end: < 1000ms** (well under 2s requirement)
+
+**Components:**
+- `LiveCallsPanel`: Polls `/api/calls/active` every 2 seconds, displays active calls
+- `LiveTranscriptDrawer`: Connects via SSE to `/api/transcripts/live/:callId`
+- `LiveSentimentBar`: Real-time positive/neutral/negative distribution
+- `CallStageIndicator`: Greeting → Discovery → Pitch → Objections → Close
+
+**Database tables:**
+- `live_transcripts`: Stores transcript chunks with sequence numbers
+- `voice_agent_calls`: Call metadata (status, timestamps, phone numbers)
+
+**Advantages:**
+- Sub-second latency for live monitoring
+- No polling overhead (SSE push model)
+- Automatic reconnection on network issues
+- Scales to thousands of concurrent calls via Supabase Realtime
+
 ## Deployment Architecture
 
 ### Vercel (Production)
