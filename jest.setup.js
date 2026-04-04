@@ -37,12 +37,61 @@ jest.mock('openai', () => {
         };
         this.chat = {
           completions: {
-            create: async ({ messages, response_format }) => {
-              // Mock chat completions for semantic VAD and other AI features
+            create: async ({ messages, response_format, model }) => {
               const userMessage = messages.find(m => m.role === 'user')?.content || '';
-              const utterance = userMessage.match(/"([^"]+)"/)?.[1] || '';
+              const systemMessage = messages.find(m => m.role === 'system')?.content || '';
 
-              // Simple rule-based classification for tests
+              // Check if this is a call evaluation request (GPT-4o for LLM-as-judge)
+              if (systemMessage.includes('call quality analyst') || systemMessage.includes('Evaluate this call')) {
+                // Mock call evaluation response
+                const transcript = userMessage.toLowerCase();
+
+                // Determine if goal was achieved based on keywords
+                const isBooking = transcript.includes('appointment') || transcript.includes('confirmed');
+                const isSuccess = transcript.includes('thank') || transcript.includes('great') || transcript.includes('perfect');
+                const isFailed = transcript.includes('ridiculous') || transcript.includes('never mind') || transcript.includes('hung up');
+
+                let goal_achieved = isBooking && isSuccess;
+                let goal_score = goal_achieved ? 9 : (isFailed ? 3 : 6);
+                let naturalness_score = isFailed ? 4 : (isSuccess ? 8 : 7);
+                let objection_score = isFailed ? 2 : 7;
+                let accuracy_score = 8;
+                let overall = (goal_score + naturalness_score + objection_score + accuracy_score) / 4;
+
+                const evaluation = {
+                  goal_achieved,
+                  goal_achievement_score: goal_score,
+                  naturalness_score,
+                  objection_handling_score: objection_score,
+                  information_accuracy_score: accuracy_score,
+                  overall_score: overall,
+                  failure_points: isFailed
+                    ? ['Agent failed to understand caller intent', 'Poor active listening']
+                    : [],
+                  improvement_suggestions: isFailed
+                    ? ['Improve clarity in responses', 'Add active listening confirmations']
+                    : ['Continue current approach'],
+                  highlight_moments: isSuccess
+                    ? ['Professional greeting', 'Successfully confirmed appointment details']
+                    : [],
+                  recommended_prompt_changes: isFailed
+                    ? ['Add prompt: "Always repeat back what you heard to confirm understanding"']
+                    : [],
+                };
+
+                return {
+                  choices: [{
+                    message: {
+                      content: JSON.stringify(evaluation),
+                    },
+                  }],
+                  model: model || 'gpt-4o',
+                  usage: { prompt_tokens: 500, completion_tokens: 200, total_tokens: 700 },
+                };
+              }
+
+              // Semantic VAD classification
+              const utterance = userMessage.match(/"([^"]+)"/)?.[1] || '';
               let type = 'filler';
               let confidence = 0.7;
               let reasoning = 'Test classification';
@@ -83,7 +132,7 @@ jest.mock('openai', () => {
                     content: response_format?.type === 'json_object' ? JSON.stringify(result) : result.reasoning,
                   },
                 }],
-                model: 'gpt-4o-mini',
+                model: model || 'gpt-4o-mini',
                 usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
               };
             },

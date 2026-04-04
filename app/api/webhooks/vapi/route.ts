@@ -15,6 +15,7 @@ import { generateCallSummary, storeCallSummaryInContact } from '@/lib/call-summa
 import { sendCallMetadataToWebhook } from '@/lib/crm-webhook'
 import { checkInboundCallRateLimit, logInboundRateLimitHit } from '@/lib/rate-limiter'
 import { monitorCallQuality } from '@/lib/call-quality-monitor'
+import { evaluateCall } from '@/lib/call-evaluator'
 import crypto from 'crypto'
 
 // Webhook event types from Vapi
@@ -431,6 +432,40 @@ async function handleCallEnded(event: Extract<VapiEvent, { type: 'call.ended' }>
     }
 
     // Could also send email here via SendGrid/Resend
+  }
+
+  // F0096: Auto-trigger LLM evaluation for calls with transcript
+  // Fire-and-forget to avoid blocking webhook response
+  if (call.transcript && call.transcript.length > 50) {
+    // Determine the goal based on call context
+    let goal = 'Handle caller inquiry professionally and accurately'
+
+    if (callReason === 'appointment') {
+      goal = 'Schedule an appointment for the caller'
+    } else if (callReason === 'sales_inquiry') {
+      goal = 'Answer pricing questions and move caller toward booking'
+    } else if (callReason === 'support') {
+      goal = 'Resolve caller support issue or escalate appropriately'
+    }
+
+    // Get tenant_id from call record if available
+    const tenant_id = callRecord?.from_number ? 'default' : 'default'
+
+    // Trigger evaluation asynchronously (fire-and-forget)
+    evaluateCall({
+      call_id: call.id,
+      transcript: call.transcript,
+      goal,
+      call_duration_seconds: call.duration,
+      outcome: endedReason,
+      customer_sentiment: call.metadata?.sentiment,
+      tenant_id,
+    }).catch((error) => {
+      console.error(`[F0096] Failed to evaluate call ${call.id}:`, error)
+      // Don't throw - evaluation is best-effort
+    })
+
+    console.log(`[F0096] Triggered auto-evaluation for call ${call.id}`)
   }
 }
 
