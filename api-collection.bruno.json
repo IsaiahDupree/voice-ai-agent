@@ -1,0 +1,264 @@
+{
+  "name": "Voice AI Agent API",
+  "version": "1.0.0",
+  "description": "F1261: API test collection - Complete API test collection for all routes",
+  "baseUrl": "http://localhost:3000",
+  "folders": [
+    {
+      "name": "Health & Status",
+      "requests": [
+        {
+          "name": "Health Check",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/health"
+        }
+      ]
+    },
+    {
+      "name": "Calls",
+      "requests": [
+        {
+          "name": "List Calls",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/calls"
+        },
+        {
+          "name": "Get Call by ID",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/calls/{{callId}}"
+        },
+        {
+          "name": "Manual Dial",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/calls/manual-dial",
+          "body": {
+            "to_number": "+15551234567",
+            "assistant_id": "{{assistantId}}"
+          }
+        },
+        {
+          "name": "Export Calls",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/calls/export?direction=inbound"
+        }
+      ]
+    },
+    {
+      "name": "Campaigns",
+      "requests": [
+        {
+          "name": "List Campaigns",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/campaigns"
+        },
+        {
+          "name": "Create Campaign",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/campaigns",
+          "body": {
+            "name": "Test Campaign",
+            "assistant_id": "{{assistantId}}",
+            "contacts": []
+          }
+        },
+        {
+          "name": "Update Campaign Notes",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/campaigns/notes",
+          "body": {
+            "campaign_id": "{{campaignId}}",
+            "notes": "Test notes"
+          }
+        },
+        {
+          "name": "Start Campaign",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/campaigns/{{campaignId}}/start"
+        }
+      ]
+    },
+    {
+      "name": "SMS",
+      "requests": [
+        {
+          "name": "Send SMS",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/sms/send",
+          "body": {
+            "to": "+15551234567",
+            "message": "Test message"
+          }
+        },
+        {
+          "name": "Bulk SMS",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/sms/bulk",
+          "body": {
+            "to_numbers": ["+15551234567", "+15559876543"],
+            "message": "Test bulk message"
+          }
+        },
+        {
+          "name": "Export SMS Opt-Outs",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/sms/opt-out-export"
+        }
+      ]
+    },
+    {
+      "name": "Contacts",
+      "requests": [
+        {
+          "name": "List Contacts",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/contacts"
+        },
+        {
+          "name": "Create Contact",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/contacts",
+          "body": {
+            "name": "Test Contact",
+            "phone": "+15551234567",
+            "email": "test@example.com"
+          }
+        },
+        {
+          "name": "Get Contact by ID",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/contacts/{{contactId}}"
+        }
+      ]
+    },
+    {
+      "name": "A/B Tests",
+      "requests": [
+        {
+          "name": "List A/B Tests",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/ab-tests"
+        },
+        {
+          "name": "Create A/B Test",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/ab-tests",
+          "body": {
+            "assistant_id": "{{assistantId}}",
+            "test_type": "greeting",
+            "variant_a": "Hello! How can I help you today?",
+            "variant_b": "Hi there! What can I do for you?",
+            "name": "Greeting Test"
+          }
+        },
+        {
+          "name": "Get A/B Test Results",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/ab-tests?test_id={{testId}}"
+        }
+      ]
+    },
+    {
+      "name": "Numbers & Vapi",
+      "requests": [
+        {
+          "name": "Search Phone Numbers by Locality",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/numbers/locality?area_code=415"
+        },
+        {
+          "name": "Purchase Phone Number",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/numbers/locality",
+          "body": {
+            "area_code": "415"
+          }
+        },
+        {
+          "name": "Update Assistant Background Music",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/vapi/assistant/background-music",
+          "body": {
+            "assistant_id": "{{assistantId}}",
+            "background_music_url": "https://example.com/music.mp3",
+            "volume": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "requests": [
+        {
+          "name": "Vapi Webhook - Call Started",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/webhooks/vapi",
+          "body": {
+            "type": "call.started",
+            "call": {
+              "id": "test-call-id",
+              "assistantId": "{{assistantId}}",
+              "customer": {
+                "number": "+15551234567"
+              }
+            }
+          }
+        },
+        {
+          "name": "Vapi Webhook - Call Ended",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/webhooks/vapi",
+          "body": {
+            "type": "call.ended",
+            "call": {
+              "id": "test-call-id",
+              "duration": 120,
+              "transcript": "Test call transcript"
+            },
+            "endedReason": "completed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "requests": [
+        {
+          "name": "Get Call Analytics",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/analytics/calls"
+        },
+        {
+          "name": "Get Campaign Analytics",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/analytics/campaigns"
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "name": "assistantId",
+      "value": "your-assistant-id-here"
+    },
+    {
+      "name": "callId",
+      "value": "your-call-id-here"
+    },
+    {
+      "name": "campaignId",
+      "value": "your-campaign-id-here"
+    },
+    {
+      "name": "contactId",
+      "value": "your-contact-id-here"
+    },
+    {
+      "name": "testId",
+      "value": "your-test-id-here"
+    }
+  ]
+}

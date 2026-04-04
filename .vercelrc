@@ -1,0 +1,18 @@
+{
+  "environments": {
+    "production": {
+      "alias": ["voice-ai-agent.vercel.app"],
+      "env": {
+        "NEXT_PUBLIC_APP_URL": "https://voice-ai-agent.vercel.app",
+        "NODE_ENV": "production"
+      }
+    },
+    "preview": {
+      "alias": ["staging.voice-ai-agent.vercel.app"],
+      "env": {
+        "NEXT_PUBLIC_APP_URL": "https://staging.voice-ai-agent.vercel.app",
+        "NODE_ENV": "staging"
+      }
+    }
+  }
+}
