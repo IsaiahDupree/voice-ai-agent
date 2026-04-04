@@ -3,10 +3,12 @@
 // F0697: Call detail contact
 // F0698: Transfer button
 // F0699: End call button
+// F119: Live transcript tab
 
 'use client'
 
 import { useEffect, useState } from 'react'
+import TranscriptDisplay from './TranscriptDisplay'
 
 interface CallDetailDrawerProps {
   callId: string
@@ -59,7 +61,7 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
   const [call, setCall] = useState<CallDetail | null>(null)
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'details' | 'transcript' | 'contact' | 'evaluation'>('details')
+  const [activeTab, setActiveTab] = useState<'details' | 'transcript' | 'contact' | 'evaluation' | 'live'>('details')
 
   useEffect(() => {
     if (isOpen && callId) {
@@ -187,7 +189,7 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
               {/* Tabs */}
               <div className="border-b">
                 <nav className="flex space-x-4 px-6">
-                  {['details', 'transcript', 'contact', 'evaluation'].map((tab) => (
+                  {['details', 'transcript', 'contact', 'evaluation', ...(call.status === 'in-progress' ? ['live'] : [])].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab as any)}
@@ -198,6 +200,12 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
                       }`}
                     >
                       {tab}
+                      {tab === 'live' && (
+                        <span className="ml-1 relative flex h-2 w-2 inline-flex">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                      )}
                       {tab === 'evaluation' && call.evaluation && (
                         <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
                           {call.evaluation.overall_score.toFixed(1)}
@@ -585,6 +593,29 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
                         </p>
                         <p className="text-sm text-gray-400">
                           Evaluations are generated automatically when calls end with a transcript
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* F119: Live transcript tab */}
+                {activeTab === 'live' && (
+                  <div className="h-full -m-6">
+                    {call.status === 'in-progress' ? (
+                      <TranscriptDisplay
+                        callId={callId}
+                        realtime={true}
+                        showMetadata={true}
+                      />
+                    ) : (
+                      <div className="text-center py-12 px-6">
+                        <div className="text-gray-400 text-5xl mb-4">📡</div>
+                        <p className="text-gray-500 font-medium mb-2">
+                          Call is not in progress
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          Live transcript is only available for active calls
                         </p>
                       </div>
                     )}

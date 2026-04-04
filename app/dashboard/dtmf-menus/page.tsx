@@ -296,7 +296,6 @@ export default function DTMFMenusPage() {
 
     const exportData = {
       name: selectedMenu.name,
-      description: selectedMenu.description,
       menu_tree: menuTree,
       timeout_seconds: selectedMenu.timeout_seconds,
       max_retries: selectedMenu.max_retries,
@@ -379,9 +378,6 @@ export default function DTMFMenusPage() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h2 className="text-xl font-semibold">{selectedMenu.name}</h2>
-                      {selectedMenu.description && (
-                        <p className="text-gray-600">{selectedMenu.description}</p>
-                      )}
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -428,7 +424,7 @@ export default function DTMFMenusPage() {
                         const nodeId = prompt('Enter new node ID (e.g., "support_menu"):');
                         if (nodeId && !menuTree[nodeId]) {
                           addNode(nodeId);
-                        } else if (menuTree[nodeId]) {
+                        } else if (nodeId && menuTree[nodeId]) {
                           alert('Node ID already exists');
                         }
                       }}
