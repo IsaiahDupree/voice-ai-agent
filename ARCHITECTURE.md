@@ -119,6 +119,72 @@
 - Word-level timestamps
 - Multi-language support
 
+### LLM Evaluation Pipeline (F96-F105)
+- **Automatic Call Quality Assessment**: GPT-4o acts as judge to evaluate every completed call
+- **Multi-Dimensional Scoring**: 5 core metrics (goal achievement, naturalness, objection handling, information accuracy, overall)
+- **Actionable Feedback**: Failure point identification, improvement suggestions, and prompt change recommendations
+- **Real-Time Dashboard**: Live evaluation trends, common failure patterns, and aggregated improvement insights
+- **Fire-and-Forget Architecture**: Evaluations triggered asynchronously on call-ended webhook to avoid blocking
+
+#### Evaluation Process
+1. Call ends with transcript (length > 50 chars)
+2. Webhook handler triggers `evaluateCall()` async (no await)
+3. GPT-4o analyzes transcript against call goal:
+   - Parse conversation structure and flow
+   - Assess goal achievement (boolean + 0-10 score)
+   - Rate naturalness of agent responses
+   - Evaluate objection handling effectiveness
+   - Judge information accuracy
+   - Calculate overall score (average of 4 metrics)
+   - Extract failure points and improvement opportunities
+   - Recommend specific prompt changes
+4. Store evaluation in `call_evaluations` table
+5. Dashboard displays scores in CallDetailDrawer + Evaluation page
+
+#### Evaluation Schema
+```typescript
+interface CallEvaluation {
+  call_id: string
+  goal_achieved: boolean              // Did the agent achieve the stated goal?
+  goal_achievement_score: number      // 0-10 rating
+  naturalness_score: number           // 0-10 rating
+  objection_handling_score: number    // 0-10 rating
+  information_accuracy_score: number  // 0-10 rating
+  overall_score: number               // Average of above 4 scores
+  failure_points: string[]            // Specific moments that went wrong
+  improvement_suggestions: string[]   // What to do differently
+  highlight_moments: string[]         // Things the agent did well
+  recommended_prompt_changes: string[] // Suggested system prompt updates
+  evaluator_model: string             // 'gpt-4o'
+  evaluation_duration_ms: number      // How long evaluation took
+  transcript_length: number           // Character count
+  call_duration_seconds: number       // Call length
+  created_at: timestamp
+  tenant_id: string                   // Multi-tenant isolation
+}
+```
+
+#### Dashboard Features
+- **/dashboard/evaluation**: Aggregate trends, score breakdown charts (Recharts), top failure patterns, improvement recommendations
+- **EvalScoreCard**: Detailed per-call view with all 5 scores, color-coded by performance (green ≥8, yellow ≥6, orange ≥4, red <4)
+- **FailurePatternsList**: Aggregated failure points across calls, sorted by frequency, with occurrence counts
+- **PromptImprovementSuggestor**: Categorized suggestions (tone, clarity, completeness, handling), one-click copy to clipboard, apply-to-prompt workflow
+
+#### API Endpoints
+```
+POST /api/evaluation/trigger        # Manually trigger evaluation
+GET  /api/evaluation/:call_id       # Get evaluation for specific call
+GET  /api/evaluation/aggregate      # Get aggregate stats (date range, tenant)
+GET  /api/evaluation/failing-calls  # Get calls below score threshold
+POST /api/evaluation/batch          # Evaluate last N calls
+```
+
+#### Benefits
+- **Rapid Iteration**: Identify prompt weaknesses within minutes of deployment
+- **Data-Driven Optimization**: Quantify impact of each prompt change via before/after scores
+- **Quality Assurance**: Flag low-scoring calls for manual review
+- **Customer Insights**: Aggregate failure patterns reveal systemic UX issues
+
 ## Data Flow Patterns
 
 ### Outbound Call Flow

@@ -34,6 +34,19 @@ interface CallDetail {
     email: string | null
     notes: string | null
   }
+  evaluation?: {
+    // F0104: Evaluation scores
+    goal_achieved: boolean
+    goal_achievement_score: number
+    naturalness_score: number
+    objection_handling_score: number
+    information_accuracy_score: number
+    overall_score: number
+    failure_points: string[]
+    improvement_suggestions: string[]
+    highlight_moments: string[]
+    recommended_prompt_changes: string[]
+  }
 }
 
 interface TranscriptMessage {
@@ -46,7 +59,7 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
   const [call, setCall] = useState<CallDetail | null>(null)
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'details' | 'transcript' | 'contact'>('details')
+  const [activeTab, setActiveTab] = useState<'details' | 'transcript' | 'contact' | 'evaluation'>('details')
 
   useEffect(() => {
     if (isOpen && callId) {
@@ -59,6 +72,19 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
     try {
       const res = await fetch(`/api/calls/${callId}`)
       const data = await res.json()
+
+      // F0104: Load evaluation data if available
+      try {
+        const evalRes = await fetch(`/api/evaluation/${callId}`)
+        if (evalRes.ok) {
+          const evalData = await evalRes.json()
+          data.evaluation = evalData
+        }
+      } catch (evalError) {
+        console.log('No evaluation available for this call')
+        // Not a critical error, continue without evaluation
+      }
+
       setCall(data)
       setLoading(false)
     } catch (error) {
@@ -161,7 +187,7 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
               {/* Tabs */}
               <div className="border-b">
                 <nav className="flex space-x-4 px-6">
-                  {['details', 'transcript', 'contact'].map((tab) => (
+                  {['details', 'transcript', 'contact', 'evaluation'].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab as any)}
@@ -172,6 +198,11 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
                       }`}
                     >
                       {tab}
+                      {tab === 'evaluation' && call.evaluation && (
+                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
+                          {call.evaluation.overall_score.toFixed(1)}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </nav>
@@ -416,6 +447,149 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
                     )}
                   </div>
                 )}
+
+                {/* F0104: Evaluation tab */}
+                {activeTab === 'evaluation' && (
+                  <div className="space-y-6">
+                    {call.evaluation ? (
+                      <>
+                        {/* Overall Status */}
+                        <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-xs font-medium text-gray-500 uppercase mb-1">
+                                Overall Score
+                              </div>
+                              <div className="text-3xl font-bold text-gray-900">
+                                {call.evaluation.overall_score.toFixed(1)}/10
+                              </div>
+                            </div>
+                            {call.evaluation.goal_achieved ? (
+                              <div className="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-semibold">
+                                ✓ Goal Achieved
+                              </div>
+                            ) : (
+                              <div className="px-4 py-2 bg-red-100 text-red-800 rounded-lg font-semibold">
+                                ✗ Goal Not Achieved
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Score Breakdown */}
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase mb-3 block">
+                            Score Breakdown
+                          </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <ScoreBadge
+                              label="Goal Achievement"
+                              score={call.evaluation.goal_achievement_score}
+                            />
+                            <ScoreBadge
+                              label="Naturalness"
+                              score={call.evaluation.naturalness_score}
+                            />
+                            <ScoreBadge
+                              label="Objection Handling"
+                              score={call.evaluation.objection_handling_score}
+                            />
+                            <ScoreBadge
+                              label="Information Accuracy"
+                              score={call.evaluation.information_accuracy_score}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Highlights */}
+                        {call.evaluation.highlight_moments.length > 0 && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase mb-2 block">
+                              ✨ Highlights
+                            </label>
+                            <div className="space-y-2">
+                              {call.evaluation.highlight_moments.map((moment, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-3 bg-green-50 border-l-4 border-green-500 rounded text-sm text-gray-900"
+                                >
+                                  {moment}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Failure Points */}
+                        {call.evaluation.failure_points.length > 0 && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase mb-2 block">
+                              ⚠️ Failure Points
+                            </label>
+                            <div className="space-y-2">
+                              {call.evaluation.failure_points.map((point, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-3 bg-red-50 border-l-4 border-red-500 rounded text-sm text-gray-900"
+                                >
+                                  {point}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Improvement Suggestions */}
+                        {call.evaluation.improvement_suggestions.length > 0 && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase mb-2 block">
+                              💡 Improvement Suggestions
+                            </label>
+                            <div className="space-y-2">
+                              {call.evaluation.improvement_suggestions.map((suggestion, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded text-sm text-gray-900"
+                                >
+                                  {suggestion}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Recommended Prompt Changes */}
+                        {call.evaluation.recommended_prompt_changes.length > 0 && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase mb-2 block">
+                              📝 Recommended Prompt Changes
+                            </label>
+                            <div className="space-y-2">
+                              {call.evaluation.recommended_prompt_changes.map((change, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-3 bg-purple-50 border-l-4 border-purple-500 rounded text-sm text-gray-900"
+                                >
+                                  {change}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="text-gray-400 text-5xl mb-4">📊</div>
+                        <p className="text-gray-500 font-medium mb-2">
+                          No evaluation available for this call
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          Evaluations are generated automatically when calls end with a transcript
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           ) : (
@@ -425,6 +599,23 @@ export default function CallDetailDrawer({ callId, isOpen, onClose }: CallDetail
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+// F0104: Score badge component for evaluation display
+function ScoreBadge({ label, score }: { label: string; score: number }) {
+  const getColor = (score: number) => {
+    if (score >= 8) return 'bg-green-100 text-green-800 border-green-300'
+    if (score >= 6) return 'bg-yellow-100 text-yellow-800 border-yellow-300'
+    if (score >= 4) return 'bg-orange-100 text-orange-800 border-orange-300'
+    return 'bg-red-100 text-red-800 border-red-300'
+  }
+
+  return (
+    <div className={`p-3 rounded-lg border-2 ${getColor(score)}`}>
+      <div className="text-2xl font-bold">{score.toFixed(1)}</div>
+      <div className="text-xs font-medium mt-1">{label}</div>
     </div>
   )
 }
