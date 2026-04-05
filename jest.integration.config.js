@@ -8,7 +8,10 @@
 module.exports = {
   displayName: 'integration',
   testEnvironment: 'node',
-  testMatch: ['**/__tests__/integration/vapi-coverage.test.ts'],
+  testMatch: [
+    '**/__tests__/integration/vapi-coverage.test.ts',
+    '**/__tests__/integration/twilio-coverage.test.ts',
+  ],
   testTimeout: 30000,
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': [

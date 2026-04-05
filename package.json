@@ -10,7 +10,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:integration": "jest --config jest.integration.config.js --testTimeout=30000"
+    "test:integration": "jest --config jest.integration.config.js --testTimeout=30000",
+    "test:vapi": "jest --config jest.integration.config.js __tests__/integration/vapi-coverage.test.ts --testTimeout=30000",
+    "test:twilio": "jest --config jest.integration.config.js __tests__/integration/twilio-coverage.test.ts --testTimeout=30000"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
