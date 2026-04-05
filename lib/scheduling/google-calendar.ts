@@ -75,7 +75,7 @@ export class GoogleCalendarProvider implements SchedulingProvider {
       this.accessToken = data.access_token
       this.tokenExpiry = Date.now() + (data.expires_in - 60) * 1000 // Refresh 1 min before expiry
 
-      return this.accessToken
+      return this.accessToken!
     } catch (error: any) {
       console.error('Google token refresh failed:', error)
       throw error

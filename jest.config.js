@@ -28,5 +28,12 @@ const customJestConfig = {
   coverageDirectory: 'coverage',
 }
 
-// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+// next/jest overrides transformIgnorePatterns, so we merge after
+module.exports = async () => {
+  const jestConfig = await createJestConfig(customJestConfig)()
+  // Allow ESM-only packages to be transformed
+  jestConfig.transformIgnorePatterns = [
+    '/node_modules/(?!(cheerio|htmlparser2|dom-serializer|dom-handler|entities|domelementtype|domutils|css-select|css-what|boolbase|nth-check|parse5|parse5-htmlparser2-tree-adapter)/)',
+  ]
+  return jestConfig
+}

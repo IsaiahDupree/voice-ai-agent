@@ -1,604 +1,101 @@
 {
+  "slug": "business-context-engine",
   "features": [
     {
-      "id": "VAPI-001",
-      "name": "Demo page renders call button",
-      "description": "Render the demo home page and assert a 'Start Call' button is present in the DOM with correct accessible label and initial idle state",
-      "type": "unit",
+      "id": "BCE-001",
+      "name": "Supabase Migration — business_profiles + business_pages tables",
+      "category": "database",
       "priority": 1,
-      "passes": false
+      "passes": true,
+      "status": "done"
     },
     {
-      "id": "VAPI-002",
-      "name": "Call button idle state styles",
-      "description": "Assert the call button displays correct idle styling (blue background, microphone icon) before any call is initiated",
-      "type": "unit",
+      "id": "BCE-002",
+      "name": "Custom Web Crawler (fetch + cheerio) — no Firecrawl",
+      "category": "backend",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-003",
+      "name": "LLM Extractor — BusinessProfile JSON via Claude claude-opus-4-6",
+      "category": "backend",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-004",
+      "name": "Brief Compressor — ContextResponse ≤600 words",
+      "category": "backend",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-005",
+      "name": "POST /api/business-context/crawl — Queue crawl job",
+      "category": "api",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-006",
+      "name": "GET /api/business-context/status — Poll job status",
+      "category": "api",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-007",
+      "name": "GET /api/business-context — Vapi tool endpoint (brief)",
+      "category": "api",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-008",
+      "name": "GET /api/business-context/full — Full profile endpoint",
+      "category": "api",
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "status": "done"
     },
     {
-      "id": "VAPI-003",
-      "name": "Call button connecting state",
-      "description": "Mock Vapi SDK start() returning a pending promise; assert button transitions to 'Connecting...' text and disabled state while connecting",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-004",
-      "name": "Call button active/in-call state",
-      "description": "After mocking Vapi 'call-start' event, assert button shows 'End Call' with red styling and call timer begins incrementing",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-005",
-      "name": "Call button ended state reset",
-      "description": "Mock Vapi 'call-end' event and assert button returns to idle state, timer resets to 00:00, and no error banner is shown",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-006",
-      "name": "Phone number input validation - valid E.164",
-      "description": "Render the outbound call form, type '+15551234567', and assert no validation error is shown and submit button is enabled",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-007",
-      "name": "Phone number input validation - invalid format",
-      "description": "Type 'not-a-phone' into the phone input and assert an inline validation error message appears and submit remains disabled",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-008",
-      "name": "Phone number input validation - empty submit",
-      "description": "Submit the outbound call form with an empty phone number field and assert required field error appears without triggering API call",
-      "type": "unit",
+      "id": "BCE-009",
+      "name": "POST /api/business-context/webhook — Vapi post-call handler → call_outcomes table",
+      "category": "api",
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "status": "done"
     },
     {
-      "id": "VAPI-009",
-      "name": "Phone number auto-formatting display",
-      "description": "Type '5551234567' and assert the input display formats to '(555) 123-4567' while submitting the raw E.164 value",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-010",
-      "name": "WebRTC connection mock - Vapi start called with assistant ID",
-      "description": "Mock @vapi-ai/web Vapi class; click start call button and assert vapi.start() is called with the correct VAPI_PUBLIC_KEY and assistantId from env",
-      "type": "unit",
+      "id": "BCE-010",
+      "name": "Vapi Session Builder — buildAssistantOverrides + get_business_context tool def",
+      "category": "integration",
       "priority": 1,
-      "passes": false
+      "passes": true,
+      "status": "done"
     },
     {
-      "id": "VAPI-011",
-      "name": "Vapi SDK 'error' event handler shows error UI",
-      "description": "Mock vapi.on('error') callback firing with a connection error; assert error toast or banner renders with the error message text",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-012",
-      "name": "Vapi SDK 'message' event updates transcript display",
-      "description": "Mock vapi.on('message') firing with a transcript message; assert the live transcript area renders the new message text in real-time",
-      "type": "unit",
+      "id": "BCE-011",
+      "name": "Dashboard page /dashboard/business-context",
+      "category": "frontend",
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "status": "done"
     },
     {
-      "id": "VAPI-013",
-      "name": "Vapi SDK 'speech-start' event shows speaking indicator",
-      "description": "Mock vapi.on('speech-start') event; assert an animated speaking/wave indicator becomes visible on the demo UI",
-      "type": "unit",
+      "id": "BCE-012",
+      "name": "Integration Tests",
+      "category": "testing",
       "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-014",
-      "name": "Vapi SDK 'speech-end' event hides speaking indicator",
-      "description": "Trigger speech-start then speech-end events in sequence; assert the speaking indicator disappears after speech-end",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-015",
-      "name": "Demo page feature cards render correctly",
-      "description": "Render app/page.tsx and assert all three feature cards (Inbound Calls, Book Appointments, SMS Follow-ups) are present with correct heading text",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-016",
-      "name": "System status link renders /api/health href",
-      "description": "Render the home page and assert the system status anchor element has href='/api/health'",
-      "type": "unit",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-017",
-      "name": "Dashboard link navigates to /dashboard",
-      "description": "Render the home page and assert the 'Open Dashboard' anchor has href='/dashboard'",
-      "type": "unit",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-018",
-      "name": "End call button calls vapi.stop()",
-      "description": "After entering active call state, click the End Call button and assert vapi.stop() was called exactly once",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-019",
-      "name": "Call status label accessibility",
-      "description": "Assert call status text elements have appropriate aria-live='polite' regions so screen readers announce state changes",
-      "type": "unit",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-020",
-      "name": "ErrorBoundary catches render errors",
-      "description": "Wrap a component that throws in ErrorBoundary; assert fallback error UI renders instead of crashing the whole page",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-021",
-      "name": "Webhook call.started creates DB record",
-      "description": "POST a mock call.started payload to /api/webhooks/vapi route handler with a mocked supabaseAdmin; assert insert is called on voice_agent_calls with correct call_id and status='in-progress'",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-022",
-      "name": "Webhook call.ended updates DB record to completed",
-      "description": "POST call.ended event; mock supabaseAdmin.from().update(); assert update is called with status='completed', ended_at, and end_reason matching the endedReason field",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-023",
-      "name": "Webhook HMAC signature validation rejects invalid sig",
-      "description": "POST to /api/webhooks/vapi with x-vapi-signature set to an incorrect HMAC; assert 401 response with error='Invalid signature'",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-024",
-      "name": "Webhook HMAC signature validation passes valid sig",
-      "description": "Compute correct HMAC-SHA256 of the payload using VAPI_WEBHOOK_SECRET and include it in the header; assert 200 response with received:true",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-025",
-      "name": "Webhook function-call bookAppointment routes correctly",
-      "description": "POST function-call event with name='bookAppointment' and valid parameters; mock calcomClient.createBooking; assert the route returns the booking confirmation JSON",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-026",
-      "name": "Webhook function-call sendSMS respects DNC list",
-      "description": "Mock checkDNC to return true for the target number; POST sendSMS function-call; assert response includes error='Number is on Do Not Call list' and Twilio fetch is never called",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-027",
-      "name": "Webhook transcript handler stores PII-redacted content",
-      "description": "POST transcript event containing a phone number in the content; mock redactPII and supabaseAdmin; assert insert is called with the redacted content value",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-028",
-      "name": "Webhook status-update syncs call status",
-      "description": "POST status-update event with status='ended'; mock supabaseAdmin.update; assert update is called with correct status value for the matching call_id",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-029",
-      "name": "lib/vapi.ts createAssistant method sends POST",
-      "description": "Mock vapiClient.post; call createAssistant with a VapiAssistant object; assert POST is made to '/assistant' with the correct body and returns the created assistant",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-030",
-      "name": "lib/vapi.ts startCall method sends POST with assistantId",
-      "description": "Mock vapiClient.post; call startCall with assistantId, phoneNumberId, customerNumber; assert POST to '/call/phone' includes all required fields",
-      "type": "unit",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-031",
-      "name": "lib/vapi.ts VapiError class properties",
-      "description": "Instantiate VapiError with code, message, statusCode, details; assert all properties are accessible and name is 'VapiError'",
-      "type": "unit",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-032",
-      "name": "lib/vapi.ts rate limit interceptor retries with backoff",
-      "description": "Mock vapiClient to return 429 three times then succeed; assert the request is retried up to 3 times and eventually returns the successful response",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-033",
-      "name": "Call state manager initial state is idle",
-      "description": "Import or instantiate the call state hook/manager; assert initial state is 'idle' with no active call ID and duration of 0",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-034",
-      "name": "Call state manager transitions on start",
-      "description": "Call the start action on the state manager; assert state transitions from 'idle' to 'connecting' and stores the call session context",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-035",
-      "name": "Webhook hang event marks call as failed",
-      "description": "POST a hang event; mock supabaseAdmin.update; assert update is called with status='failed' and end_reason='hang_detected' for the call_id",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-036",
-      "name": "Webhook speech-update event stores sentiment",
-      "description": "POST a speech-update event with sentiment='positive'; mock supabaseAdmin.update; assert update is called with metadata containing lastSpeechUpdate and sentiment fields",
-      "type": "unit",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-037",
-      "name": "Webhook blocked number skips call processing",
-      "description": "Mock supabaseAdmin blocklist query to return a blocked number; POST call.started; assert call is inserted with status='blocked' and main contact lookup is not performed",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-038",
-      "name": "Webhook caller ID lookup personalizes greeting",
-      "description": "Mock contact lookup returning {name: 'Jane Smith'}; POST call.started; assert voice_agent_calls insert includes personalized_greeting='Hi Jane! Thanks for calling.'",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-039",
-      "name": "Webhook call.ended voicemail detection sets is_voicemail flag",
-      "description": "POST call.ended with endedReason='voicemail-detected'; assert update call includes is_voicemail=true",
-      "type": "unit",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-040",
-      "name": "Webhook unknown event type returns received:true",
-      "description": "POST webhook body with an unknown type; assert the handler returns 200 with received:true without throwing",
-      "type": "unit",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-041",
-      "name": "POST /api/vapi/assistant creates assistant via Vapi API",
-      "description": "Start a real HTTP test server wrapping the Next.js route handler; POST a valid VapiAssistant body; intercept the outbound Vapi API call with a local HTTP stub; assert 201 response with assistant id returned",
-      "type": "integration",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-042",
-      "name": "GET /api/vapi/assistant lists assistants",
-      "description": "Stub the Vapi API list endpoint with in-memory response; GET /api/vapi/assistant; assert 200 with array of assistant objects",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-043",
-      "name": "POST /api/webhooks/vapi full call.started flow writes to Supabase",
-      "description": "Boot a test HTTP server; POST call.started payload with valid HMAC; use a real Supabase in-memory table fixture; assert a row appears in voice_agent_calls with correct fields",
-      "type": "integration",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-044",
-      "name": "POST /api/webhooks/vapi call.ended updates existing call row",
-      "description": "Seed voice_agent_calls with an in-progress call; POST call.ended; assert the same call_id row is updated with status='completed' and duration_seconds populated",
-      "type": "integration",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-045",
-      "name": "POST /api/calls/outbound validates required fields",
-      "description": "POST to /api/calls/outbound without customerNumber; assert 400 response with error='customerNumber is required for outbound calls'",
-      "type": "integration",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-046",
-      "name": "POST /api/calls/outbound initiates call and logs to Supabase",
-      "description": "POST valid outbound payload; stub Vapi /call/phone with real local HTTP server returning call object; assert call is inserted into voice_agent_calls with direction='outbound' and status='queued'",
-      "type": "integration",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-047",
-      "name": "POST /api/calls/outbound contact lookup generates whisper context",
-      "description": "Seed voice_agent_contacts with a matching phone; POST outbound call without explicit whisperContext; assert response includes whisper_context_applied=true and whisper_fields is non-empty",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-048",
-      "name": "POST /api/webhooks/vapi function-call bookAppointment integration",
-      "description": "Run a local Cal.com API stub; POST function-call event with bookAppointment params; assert 200 with booking uid in response and voice_agent_bookings row inserted",
-      "type": "integration",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-049",
-      "name": "POST /api/webhooks/vapi function-call bookAppointment conflict returns error",
-      "description": "Cal.com stub returns BOOKING_CONFLICT error; POST bookAppointment function-call; assert response contains errorCode='BOOKING_CONFLICT' and no booking row is inserted",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-050",
-      "name": "POST /api/webhooks/vapi function-call sendSMS sends via Twilio stub",
-      "description": "Run local Twilio API stub; POST sendSMS function-call; assert stub received POST to /Messages.json with correct To/From/Body and voice_agent_sms_logs row inserted",
-      "type": "integration",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-051",
-      "name": "Supabase voice_agent_calls table round-trip",
-      "description": "Insert a call record directly via supabaseAdmin; query it back; assert all fields match including JSONB metadata field",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-052",
-      "name": "Supabase voice_agent_transcripts stores per-call rows",
-      "description": "Insert two transcript rows for the same call_id; query all transcripts for that call; assert two rows returned with correct role and content fields",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-053",
-      "name": "Supabase voice_agent_bookings stores booking after call",
-      "description": "Trigger bookAppointment integration flow; assert voice_agent_bookings contains a row with correct event_type_id, attendee_email, and status='confirmed'",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-054",
-      "name": "Webhook idempotency - duplicate call.started events",
-      "description": "POST the same call.started payload twice; assert only one row is inserted in voice_agent_calls (upsert or conflict handling prevents duplicate)",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-055",
-      "name": "Inbound call rate limit blocks excess calls",
-      "description": "Seed the rate limit state for a phone number to be at limit; POST call.started; assert the call is inserted with status='rate_limited' and logInboundRateLimitHit is triggered",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-056",
-      "name": "SMS opt-out flag prevents sendSMS",
-      "description": "Seed voice_agent_contacts with opt_out_sms=true; POST sendSMS function-call for that number; assert response error='Contact has opted out of SMS' and no Twilio request made",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-057",
-      "name": "POST /api/webhooks/vapi lookupContact returns contact data",
-      "description": "Seed a contact in voice_agent_contacts; POST function-call lookupContact with that phone; assert response contains found:true and contact name/email",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-058",
-      "name": "POST /api/webhooks/vapi lookupContact unknown phone",
-      "description": "POST lookupContact with a phone number not in the DB; assert response contains found:false and contact:null",
-      "type": "integration",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-059",
-      "name": "POST /api/webhooks/vapi invalid JSON body returns 500",
-      "description": "POST malformed JSON body to the webhook handler; assert 500 response with error message",
-      "type": "integration",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-060",
-      "name": "Outbound call whisper overrides applied to Vapi start payload",
-      "description": "Seed a contact with name and company; POST outbound call for that number; capture the Vapi /call/phone request body via stub; assert assistantOverrides includes whisper context metadata",
-      "type": "integration",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-061",
-      "name": "E2E: Navigate to demo page and assert heading visible",
-      "description": "Playwright: navigate to localhost:3000; assert h1 'Voice AI Agent' is visible; assert page title contains 'Voice AI Agent'",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-062",
-      "name": "E2E: Start call button visible on demo page",
-      "description": "Playwright: navigate to demo page; assert a button with text matching /start call/i is visible and not disabled before any interaction",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-063",
-      "name": "E2E: Click start call button transitions to connecting state",
-      "description": "Playwright: intercept Vapi WebRTC; click Start Call; assert button text changes to 'Connecting...' and is disabled within 500ms",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-064",
-      "name": "E2E: Active call shows end button and timer",
-      "description": "Playwright: mock Vapi SDK to immediately fire call-start; assert End Call button appears and a timer element is visible and incrementing",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-065",
-      "name": "E2E: Click end call returns to idle state",
-      "description": "Playwright: after entering active call state via mock, click End Call; assert button returns to 'Start Call' label and timer resets to 00:00",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-066",
-      "name": "E2E: Phone number input form visible on demo page",
-      "description": "Playwright: assert the outbound call phone number form section is visible with a labeled text input and submit button",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-067",
-      "name": "E2E: Phone form invalid input shows validation error",
-      "description": "Playwright: type 'abc123' into phone input field, click submit; assert a validation error message appears below the input",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-068",
-      "name": "E2E: Phone form valid submission triggers outbound call",
-      "description": "Playwright: intercept POST /api/calls/outbound and return 201; type '+15551234567'; click Request Call; assert request is made and success state UI appears",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-069",
-      "name": "E2E: Outbound call API error shows user-facing error message",
-      "description": "Playwright: intercept /api/calls/outbound and return 500; submit valid phone number; assert an error message is shown to the user (not a raw exception)",
-      "type": "e2e",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-070",
-      "name": "E2E: Call status updates live during active call",
-      "description": "Playwright: mock Vapi message event to fire with a transcript string; assert the demo UI displays the transcript text in a live-transcript element within 1 second",
-      "type": "e2e",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-071",
-      "name": "E2E: Dashboard link navigates to /dashboard",
-      "description": "Playwright: click 'Open Dashboard' button on home page; assert URL changes to /dashboard and the dashboard page loads without error",
-      "type": "e2e",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-072",
-      "name": "E2E: /api/health endpoint returns 200",
-      "description": "Playwright: navigate to /api/health; assert response status is 200 and body contains a status field",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
-    },
-    {
-      "id": "VAPI-073",
-      "name": "E2E: Demo page is responsive on mobile viewport",
-      "description": "Playwright: set viewport to 375x812 (iPhone 14); navigate to demo page; assert the call button and phone form are visible and not obscured in mobile layout",
-      "type": "e2e",
-      "priority": 2,
-      "passes": false
-    },
-    {
-      "id": "VAPI-074",
-      "name": "E2E: Keyboard navigation reaches call button",
-      "description": "Playwright: tab through the page starting from body; assert focus reaches the Start Call button and pressing Enter triggers the call flow",
-      "type": "e2e",
-      "priority": 3,
-      "passes": false
-    },
-    {
-      "id": "VAPI-075",
-      "name": "E2E: Demo page loads without console errors",
-      "description": "Playwright: navigate to demo page; listen for console error events; assert no JavaScript errors are emitted during page load and initial render",
-      "type": "e2e",
-      "priority": 1,
-      "passes": false
+      "passes": true,
+      "status": "done"
     }
   ]
 }
