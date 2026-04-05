@@ -1,0 +1,86 @@
+# Feature 220: Easy!Appointments Docker Setup
+# Self-hosted appointment scheduling with MySQL database
+#
+# Usage:
+#   docker-compose up -d      # Start services
+#   docker-compose down       # Stop services
+#   docker-compose logs -f    # View logs
+#
+# Access: http://localhost:8080
+# Default admin: admin / password (change after first login)
+
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: easyappointments-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_change_me
+      MYSQL_DATABASE: easyappointments
+      MYSQL_USER: easyappointments
+      MYSQL_PASSWORD: easyappointments_password_change_me
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - easyappointments_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password_change_me"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Easy!Appointments Application
+  easyappointments:
+    image: easyappointments/easyappointments:latest
+    container_name: easyappointments-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      # Database Configuration
+      DB_HOST: mysql
+      DB_NAME: easyappointments
+      DB_USERNAME: easyappointments
+      DB_PASSWORD: easyappointments_password_change_me
+
+      # Application Configuration
+      BASE_URL: http://localhost:8080
+      LANGUAGE: english
+      DEBUG_MODE: "FALSE"
+
+      # Email Configuration (optional - configure SMTP for email notifications)
+      # SMTP_HOST: smtp.gmail.com
+      # SMTP_PORT: 587
+      # SMTP_CRYPTO: tls
+      # SMTP_USER: your-email@gmail.com
+      # SMTP_PASS: your-app-password
+
+      # API Configuration
+      # After installation, enable API in Settings → API
+      # Then generate an API key for integration
+    volumes:
+      - easyappointments_data:/var/www/html
+    networks:
+      - easyappointments_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/index.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  mysql_data:
+    driver: local
+  easyappointments_data:
+    driver: local
+
+networks:
+  easyappointments_network:
+    driver: bridge

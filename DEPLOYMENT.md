@@ -904,3 +904,574 @@ VALUES (
 - Implement A/B testing for prompts
 - Add sentiment analysis
 - Create voicemail detection and drop
+
+---
+
+## Easy!Appointments Self-Hosting (Feature 227)
+
+Easy!Appointments is a self-hosted scheduling system included as an alternative to Cal.com and Google Calendar. This guide covers deploying the Easy!Appointments Docker stack alongside your Voice AI Agent.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│  Voice AI Agent (Next.js)                   │
+│  - API Routes: /api/scheduling/*            │
+│  - Scheduling Provider: EasyAppointmentsProvider
+│  - Port: 3000                               │
+└────────────────┬────────────────────────────┘
+                 │
+                 │ HTTP API (localhost:8080)
+                 ▼
+┌─────────────────────────────────────────────┐
+│  Easy!Appointments (Docker)                 │
+│  - Web UI: http://localhost:8080            │
+│  - API: /index.php/api/v1/*                 │
+│  - Port: 8080                               │
+└────────────────┬────────────────────────────┘
+                 │
+                 │ MySQL Protocol
+                 ▼
+┌─────────────────────────────────────────────┐
+│  MySQL 8.0 (Docker)                         │
+│  - Database: easyappointments               │
+│  - User: easyappointments                   │
+│  - Port: 3306 (internal only)               │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+### Quick Start
+
+#### 1. Start Docker Stack
+
+```bash
+cd /path/to/voice-ai-agent
+cd docker/easyappointments
+
+# Start services
+docker-compose up -d
+
+# Verify services are running
+docker-compose ps
+
+# View logs
+docker-compose logs -f
+```
+
+Expected output:
+```
+NAME                        IMAGE                                    STATUS
+easyappointments-app        easyappointments/easyappointments:latest Up 30 seconds
+easyappointments-mysql      mysql:8.0                                Up 30 seconds (healthy)
+```
+
+#### 2. Complete Installation Wizard
+
+1. Open browser to: **http://localhost:8080**
+2. Follow the installation wizard:
+   - **Database Settings** (pre-configured in docker-compose.yml):
+     - Host: `mysql`
+     - Database: `easyappointments`
+     - Username: `easyappointments`
+     - Password: `easyappointments_password_change_me`
+   - **Admin Account**:
+     - Email: your admin email
+     - Password: choose a strong password
+   - **Company Info**: fill in your business details
+
+3. Click **Install** and wait for completion
+
+#### 3. Enable API Access
+
+After installation:
+
+1. Log in to Easy!Appointments
+2. Navigate to **Settings** → **API** (top menu)
+3. Toggle **Enable API** to ON
+4. Click **Generate API Key**
+5. **Copy the API key** — you'll need it for the Voice AI Agent
+
+#### 4. Configure Voice AI Agent
+
+Update your `.env` file:
+
+```bash
+# Switch to Easy!Appointments provider
+SCHEDULING_PROVIDER=easyappointments
+
+# Easy!Appointments Configuration
+EASYAPPOINTMENTS_API_URL=http://localhost:8080
+EASYAPPOINTMENTS_API_KEY=your_generated_api_key_here
+EASYAPPOINTMENTS_SERVICE_ID=1  # Get from Settings → Services
+```
+
+#### 5. Restart Voice AI Agent
+
+```bash
+# If running locally
+npm run dev
+
+# If running in production
+pm2 restart voice-ai-agent
+
+# Or Docker
+docker-compose restart
+```
+
+#### 6. Verify Integration
+
+Visit the scheduling dashboard:
+```
+http://localhost:3000/dashboard/scheduling
+```
+
+You should see:
+- **Active Provider**: Easy!Appointments
+- **Status**: Configured (green)
+- **Health**: Healthy
+
+---
+
+### Configuration
+
+#### Add a Service
+
+Services define the types of appointments you offer:
+
+1. Go to **Settings** → **Services**
+2. Click **Add Service**
+3. Configure:
+   - **Name**: "30-Minute Consultation"
+   - **Duration**: 30 minutes
+   - **Price**: $0 (optional)
+   - **Description**: "Initial consultation call"
+4. Click **Save**
+5. Note the **Service ID** (visible in URL or API)
+
+Update `.env` with the service ID:
+```bash
+EASYAPPOINTMENTS_SERVICE_ID=1
+```
+
+#### Add Providers (Staff)
+
+Providers are staff members who perform appointments:
+
+1. Go to **Settings** → **Users** → **Providers**
+2. Click **Add Provider**
+3. Configure:
+   - **Name**: Staff member's name
+   - **Email/Phone**: Contact details
+   - **Services**: Assign services this provider offers
+   - **Working Plan**: Set availability hours
+4. Click **Save**
+
+#### Set Working Hours
+
+Define when appointments can be booked:
+
+1. Edit a provider
+2. Go to **Working Plan** tab
+3. For each day of the week:
+   - **Start**: 09:00
+   - **End**: 17:00
+   - **Breaks**: Add lunch breaks (e.g., 12:00-13:00)
+   - **Disable**: Check to mark day as unavailable
+4. Click **Save**
+
+---
+
+### Production Deployment
+
+#### Security Hardening
+
+**1. Change Default Passwords**
+
+Edit `docker-compose.yml` BEFORE first run:
+
+```yaml
+environment:
+  MYSQL_ROOT_PASSWORD: your_secure_root_password_here
+  MYSQL_PASSWORD: your_secure_app_password_here
+```
+
+**2. Use Strong API Key**
+
+Regenerate API key after installation:
+- Settings → API → Regenerate API Key
+- Update `.env` with new key
+
+**3. Enable HTTPS**
+
+Use Nginx reverse proxy:
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name appointments.yourdomain.com;
+
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Update `docker-compose.yml`:
+```yaml
+environment:
+  BASE_URL: https://appointments.yourdomain.com
+```
+
+**4. Restrict API Access**
+
+Add IP whitelist in Nginx:
+
+```nginx
+location /index.php/api/ {
+    allow 10.0.0.0/24;  # Your Voice AI Agent's IP
+    deny all;
+
+    proxy_pass http://localhost:8080;
+}
+```
+
+**5. Set Up Firewall**
+
+```bash
+# Allow only HTTPS (443) and SSH (22)
+ufw allow 22/tcp
+ufw allow 443/tcp
+ufw enable
+
+# Block direct access to port 8080
+ufw deny 8080/tcp
+```
+
+#### Email Notifications
+
+Configure SMTP for appointment confirmations:
+
+**Gmail Example**
+
+1. Create App Password: https://support.google.com/accounts/answer/185833
+
+2. Edit `docker-compose.yml`:
+```yaml
+environment:
+  SMTP_HOST: smtp.gmail.com
+  SMTP_PORT: 587
+  SMTP_CRYPTO: tls
+  SMTP_USER: your-email@gmail.com
+  SMTP_PASS: your-app-password
+```
+
+3. Restart:
+```bash
+docker-compose restart
+```
+
+**SendGrid / AWS SES**
+
+```yaml
+# SendGrid
+SMTP_HOST: smtp.sendgrid.net
+SMTP_PORT: 587
+SMTP_USER: apikey
+SMTP_PASS: your_sendgrid_api_key
+
+# AWS SES
+SMTP_HOST: email-smtp.us-east-1.amazonaws.com
+SMTP_PORT: 587
+SMTP_USER: your_smtp_username
+SMTP_PASS: your_smtp_password
+```
+
+---
+
+### Backup & Restore
+
+#### Automated Daily Backups
+
+Create backup script:
+
+```bash
+#!/bin/bash
+# /path/to/voice-ai-agent/docker/easyappointments/backup.sh
+
+BACKUP_DIR="/backups/easyappointments"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+mkdir -p $BACKUP_DIR
+
+# Backup MySQL database
+docker exec easyappointments-mysql mysqldump \
+  -u easyappointments \
+  -peasyappointments_password_change_me \
+  easyappointments \
+  > "$BACKUP_DIR/db_$DATE.sql"
+
+# Compress backup
+gzip "$BACKUP_DIR/db_$DATE.sql"
+
+# Delete backups older than 30 days
+find $BACKUP_DIR -name "db_*.sql.gz" -mtime +30 -delete
+
+echo "Backup completed: $BACKUP_DIR/db_$DATE.sql.gz"
+```
+
+Make executable and add to cron:
+
+```bash
+chmod +x backup.sh
+
+# Add to crontab (daily at 2 AM)
+crontab -e
+0 2 * * * /path/to/backup.sh >> /var/log/easyappointments-backup.log 2>&1
+```
+
+#### Manual Backup
+
+```bash
+# Backup
+docker exec easyappointments-mysql mysqldump \
+  -u easyappointments \
+  -peasyappointments_password_change_me \
+  easyappointments > backup.sql
+
+# Compress
+gzip backup.sql
+```
+
+#### Restore from Backup
+
+```bash
+# Decompress
+gunzip backup.sql.gz
+
+# Restore
+docker exec -i easyappointments-mysql mysql \
+  -u easyappointments \
+  -peasyappointments_password_change_me \
+  easyappointments < backup.sql
+
+# Restart app
+docker-compose restart easyappointments
+```
+
+---
+
+### Monitoring
+
+#### Health Checks
+
+**Application Health**
+
+```bash
+# HTTP endpoint
+curl -f http://localhost:8080/index.php || echo "App down"
+
+# Docker health status
+docker inspect --format='{{.State.Health.Status}}' easyappointments-app
+```
+
+**Database Health**
+
+```bash
+docker exec easyappointments-mysql mysqladmin ping -h localhost -u root -proot_password || echo "DB down"
+```
+
+**Automated Monitoring**
+
+Add to cron (every 5 minutes):
+
+```bash
+*/5 * * * * /path/to/health-check.sh || systemctl restart docker
+```
+
+#### Logs
+
+View real-time logs:
+
+```bash
+# All services
+docker-compose logs -f
+
+# Application only
+docker-compose logs -f easyappointments
+
+# Database only
+docker-compose logs -f mysql
+
+# Last 100 lines
+docker-compose logs --tail=100
+```
+
+#### Disk Usage
+
+Easy!Appointments database grows over time. Monitor:
+
+```bash
+# Check database size
+docker exec easyappointments-mysql mysql -u root -proot_password -e \
+  "SELECT table_schema AS 'Database', 
+   ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS 'Size (MB)' 
+   FROM information_schema.tables 
+   WHERE table_schema = 'easyappointments' 
+   GROUP BY table_schema;"
+
+# Check Docker volume size
+docker system df -v | grep easyappointments
+```
+
+---
+
+### Troubleshooting
+
+#### Port Conflict
+
+If port 8080 is in use:
+
+```yaml
+# docker-compose.yml
+ports:
+  - "8081:80"  # Change to 8081
+```
+
+Update `.env`:
+```bash
+EASYAPPOINTMENTS_API_URL=http://localhost:8081
+```
+
+#### Can't Connect to Database
+
+Check MySQL is healthy:
+
+```bash
+docker-compose logs mysql
+
+# Verify connection
+docker exec easyappointments-mysql mysql \
+  -u easyappointments \
+  -peasyappointments_password_change_me \
+  -e "SHOW DATABASES;"
+```
+
+#### API Returns 401 Unauthorized
+
+1. Verify API is enabled: Settings → API
+2. Check API key matches `.env`
+3. Verify authorization header format:
+   ```
+   Authorization: Bearer YOUR_API_KEY
+   ```
+
+#### Reset Admin Password
+
+```bash
+# Connect to MySQL
+docker exec -it easyappointments-mysql mysql \
+  -u root -proot_password easyappointments
+
+# Update password (hashed: "newpassword")
+UPDATE ea_users
+SET password = '$2y$10$K7O/MV6CneZ6.V1FuT3Q1.m1r2L/H8YJ0h8qTxO3F4kF7wXYlLF2K'
+WHERE id_roles = 1;
+
+exit;
+```
+
+Log in with password: `newpassword`
+
+#### Appointments Not Showing in Dashboard
+
+Check integration:
+
+```bash
+# Test API connectivity
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  http://localhost:8080/index.php/api/v1/appointments
+
+# Check Voice AI Agent logs
+npm run dev  # or pm2 logs voice-ai-agent
+
+# Verify provider is set correctly
+cat .env | grep SCHEDULING_PROVIDER
+```
+
+---
+
+### Scaling
+
+#### High-Traffic Setup
+
+For >100 bookings/day, use separate database server:
+
+1. **External MySQL**:
+   ```yaml
+   # Remove mysql service from docker-compose.yml
+   # Update environment:
+   environment:
+     DB_HOST: db.yourdomain.com
+     DB_NAME: easyappointments
+     DB_USERNAME: ea_user
+     DB_PASSWORD: secure_password
+   ```
+
+2. **Redis Caching** (optional):
+   Add Redis service for session caching.
+
+3. **Load Balancer**:
+   Run multiple Easy!Appointments instances behind Nginx.
+
+#### Database Optimization
+
+```sql
+-- Add indexes for faster queries
+CREATE INDEX idx_appointments_start_datetime ON ea_appointments(start_datetime);
+CREATE INDEX idx_appointments_id_users_provider ON ea_appointments(id_users_provider);
+CREATE INDEX idx_appointments_id_services ON ea_appointments(id_services);
+
+-- Archive old appointments (>1 year)
+CREATE TABLE ea_appointments_archive LIKE ea_appointments;
+INSERT INTO ea_appointments_archive
+  SELECT * FROM ea_appointments
+  WHERE start_datetime < DATE_SUB(NOW(), INTERVAL 1 YEAR);
+
+DELETE FROM ea_appointments
+  WHERE start_datetime < DATE_SUB(NOW(), INTERVAL 1 YEAR);
+```
+
+---
+
+### Uninstall
+
+```bash
+# Stop services
+docker-compose down
+
+# Remove all data (WARNING: irreversible!)
+docker-compose down -v
+
+# Remove images
+docker rmi easyappointments/easyappointments:latest mysql:8.0
+```
+
+---
+
+### Resources
+
+- **Full Setup Guide**: `docker/easyappointments/README.md`
+- **Official Docs**: https://docs.easyappointments.org/
+- **API Reference**: https://easyappointments.org/docs/api/
+- **GitHub**: https://github.com/alextselegidis/easyappointments
+- **Docker Hub**: https://hub.docker.com/r/easyappointments/easyappointments
+

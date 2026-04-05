@@ -955,3 +955,359 @@ All errors include:
 - `error`: Human-readable error message
 - `server`: Server name that failed
 - `tool`: Tool name that failed
+
+---
+
+## Scheduling Abstraction (Features 192-227)
+
+The Voice AI Agent supports multiple scheduling providers through a unified abstraction layer. Switch providers by setting the `SCHEDULING_PROVIDER` environment variable.
+
+### Supported Providers
+
+| Provider | Value | Required Env Vars |
+|----------|-------|-------------------|
+| **Cal.com** | `calcom` | `CALCOM_API_KEY` |
+| **Easy!Appointments** | `easyappointments` | `EASYAPPOINTMENTS_API_URL`, `EASYAPPOINTMENTS_API_KEY` |
+| **Google Calendar** | `google-calendar` | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` |
+
+### Provider Configuration
+
+Set `SCHEDULING_PROVIDER` in your `.env` file:
+
+```bash
+# Use Cal.com (default)
+SCHEDULING_PROVIDER=calcom
+CALCOM_API_KEY=your_calcom_api_key
+
+# OR use Easy!Appointments
+SCHEDULING_PROVIDER=easyappointments
+EASYAPPOINTMENTS_API_URL=http://localhost:8080
+EASYAPPOINTMENTS_API_KEY=your_api_key
+
+# OR use Google Calendar
+SCHEDULING_PROVIDER=google-calendar
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REFRESH_TOKEN=your_refresh_token
+```
+
+---
+
+### Scheduling API Endpoints
+
+#### GET /api/scheduling/providers
+List available scheduling providers and their configuration status
+
+**Response:**
+```json
+{
+  "currentProvider": {
+    "name": "calcom",
+    "displayName": "Cal.com",
+    "configured": true,
+    "valid": true,
+    "errors": []
+  },
+  "availableProviders": [
+    {
+      "name": "calcom",
+      "displayName": "Cal.com",
+      "active": true,
+      "configured": true,
+      "requiredEnvVars": ["CALCOM_API_KEY"],
+      "description": "Cal.com scheduling platform"
+    },
+    {
+      "name": "easyappointments",
+      "displayName": "Easy!Appointments",
+      "active": false,
+      "configured": false,
+      "requiredEnvVars": ["EASYAPPOINTMENTS_API_URL", "EASYAPPOINTMENTS_API_KEY"],
+      "description": "Self-hosted appointment scheduling"
+    },
+    {
+      "name": "google-calendar",
+      "displayName": "Google Calendar",
+      "active": false,
+      "configured": false,
+      "requiredEnvVars": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN"],
+      "description": "Direct Google Calendar integration"
+    }
+  ]
+}
+```
+
+---
+
+#### POST /api/scheduling/availability
+Check available time slots
+
+**Request Body:**
+```json
+{
+  "start_date": "2026-04-10T00:00:00Z",
+  "end_date": "2026-04-17T00:00:00Z",
+  "duration_minutes": 30,
+  "timezone": "America/New_York"
+}
+```
+
+**Response:**
+```json
+{
+  "slots": [
+    {
+      "start": "2026-04-10T14:00:00Z",
+      "end": "2026-04-10T14:30:00Z",
+      "available": true,
+      "timezone": "America/New_York"
+    },
+    {
+      "start": "2026-04-10T15:00:00Z",
+      "end": "2026-04-10T15:30:00Z",
+      "available": false,
+      "timezone": "America/New_York"
+    }
+  ],
+  "timezone": "America/New_York",
+  "duration_minutes": 30,
+  "provider": "calcom"
+}
+```
+
+---
+
+#### POST /api/scheduling/book
+Create a new appointment
+
+**Request Body:**
+```json
+{
+  "start_time": "2026-04-10T14:00:00Z",
+  "end_time": "2026-04-10T14:30:00Z",
+  "customer_name": "John Doe",
+  "customer_email": "john@example.com",
+  "customer_phone": "+15555551234",
+  "timezone": "America/New_York",
+  "notes": "Initial consultation"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "booking": {
+    "id": "abc123",
+    "provider": "calcom",
+    "customer_name": "John Doe",
+    "customer_email": "john@example.com",
+    "customer_phone": "+15555551234",
+    "start_time": "2026-04-10T14:00:00Z",
+    "end_time": "2026-04-10T14:30:00Z",
+    "timezone": "America/New_York",
+    "status": "confirmed",
+    "notes": "Initial consultation",
+    "meeting_url": "https://meet.cal.com/abc123",
+    "created_at": "2026-04-04T12:00:00Z"
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "Slot no longer available"
+}
+```
+
+---
+
+#### GET /api/scheduling/bookings
+List upcoming bookings
+
+**Query Parameters:**
+- `filter`: `upcoming` | `past` | `all` (default: `upcoming`)
+- `limit`: Max results (default: 10)
+
+**Response:**
+```json
+{
+  "bookings": [
+    {
+      "id": "abc123",
+      "provider": "calcom",
+      "customer_name": "John Doe",
+      "customer_email": "john@example.com",
+      "customer_phone": "+15555551234",
+      "start_time": "2026-04-10T14:00:00Z",
+      "end_time": "2026-04-10T14:30:00Z",
+      "timezone": "America/New_York",
+      "status": "confirmed",
+      "meeting_url": "https://meet.cal.com/abc123",
+      "created_at": "2026-04-04T12:00:00Z"
+    }
+  ],
+  "total": 1,
+  "has_more": false
+}
+```
+
+---
+
+#### POST /api/scheduling/bookings/cancel
+Cancel a booking
+
+**Request Body:**
+```json
+{
+  "booking_id": "abc123"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+---
+
+#### GET /api/scheduling/health
+Check scheduling provider health
+
+**Response:**
+```json
+{
+  "provider": {
+    "name": "calcom",
+    "configured": "yes",
+    "healthy": true,
+    "responseTime": "234ms",
+    "error": null
+  },
+  "status": "healthy",
+  "timestamp": "2026-04-04T12:00:00Z"
+}
+```
+
+---
+
+### Google Calendar OAuth Flow (Features 213-214)
+
+#### GET /api/auth/google-calendar
+Initiates Google Calendar OAuth flow
+
+**Query Parameters:**
+- `state` (optional): CSRF protection state parameter
+
+**Redirects to:** Google OAuth consent screen
+
+---
+
+#### GET /api/auth/google-calendar/callback
+OAuth callback endpoint (handled automatically by Google)
+
+**Query Parameters:**
+- `code`: Authorization code from Google
+- `state`: State parameter from initial request
+- `error`: Error code if authorization failed
+
+**Redirects to:** `/dashboard/scheduling` with success or error message
+
+---
+
+### Programmatic Provider Access
+
+Use the scheduling abstraction in your code:
+
+```typescript
+import { getSchedulingProvider } from '@/lib/scheduling'
+
+// Get the active provider (based on SCHEDULING_PROVIDER env var)
+const provider = getSchedulingProvider()
+
+// Check availability
+const availability = await provider.checkAvailability({
+  start_date: '2026-04-10T00:00:00Z',
+  end_date: '2026-04-17T00:00:00Z',
+  duration_minutes: 30,
+  timezone: 'America/New_York'
+})
+
+// Book appointment
+const result = await provider.bookAppointment({
+  start_time: '2026-04-10T14:00:00Z',
+  end_time: '2026-04-10T14:30:00Z',
+  customer_name: 'John Doe',
+  customer_email: 'john@example.com',
+  customer_phone: '+15555551234',
+  timezone: 'America/New_York'
+})
+
+// List bookings
+const bookings = await provider.listBookings({
+  start_date: '2026-04-10T00:00:00Z',
+  limit: 10
+})
+
+// Cancel booking
+await provider.cancelAppointment({ booking_id: 'abc123' })
+
+// Health check
+const health = await provider.healthCheck()
+```
+
+---
+
+### Provider-Specific Notes
+
+#### Cal.com
+- Requires Cal.com Pro account for API access
+- Event types must be configured in Cal.com dashboard
+- Uses `event_type_id` to determine appointment type
+
+#### Easy!Appointments
+- Self-hosted solution (see `docker/easyappointments/README.md` for setup)
+- Requires API to be enabled in Settings → API
+- Must configure services and working hours in dashboard
+- Default port: 8080
+
+#### Google Calendar
+- Requires Google Cloud project with Calendar API enabled
+- OAuth flow required for initial setup (visit `/api/auth/google-calendar`)
+- Tokens stored in `google_calendar_tokens` table
+- Automatically refreshes expired access tokens
+- Uses `primary` calendar by default
+
+---
+
+### Switching Providers
+
+To switch from one provider to another:
+
+1. Update `SCHEDULING_PROVIDER` in `.env`
+2. Set required environment variables for new provider
+3. Restart the application
+4. Verify configuration at `/dashboard/scheduling`
+
+No code changes required — the abstraction handles provider-specific details automatically.
+
+---
+
+### Dashboard Components (Features 217-219)
+
+- **SchedulingProviderCard**: Displays provider status, last booking, and connection button
+- **AvailabilityTester**: Interactive date picker to test slot availability
+- **BookingsList**: List of upcoming/past bookings with filters
+
+Import in your dashboard:
+
+```tsx
+import { SchedulingProviderCard } from '@/app/dashboard/components/SchedulingProviderCard'
+import { AvailabilityTester } from '@/app/dashboard/components/AvailabilityTester'
+import { BookingsList } from '@/app/dashboard/components/BookingsList'
+```
+
