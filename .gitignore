@@ -34,3 +34,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Harness logs and outputs (large files)
+harness-output.log
+harness-metrics.json
+harness-status.json
+*.log
