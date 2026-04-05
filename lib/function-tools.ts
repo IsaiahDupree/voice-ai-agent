@@ -602,6 +602,73 @@ export const updateCallerMemoryTool: VapiFunctionTool = {
   async: true,
 }
 
+// Feature 156: MCP Tool Bridge - generic function tool for calling any MCP server
+export const callMCPTool: VapiFunctionTool = {
+  type: 'function',
+  function: {
+    name: 'callMCPTool',
+    description: 'Call any registered MCP (Model Context Protocol) server tool. Use this to execute database queries, access calendars, or call other backend services registered in the MCP registry.',
+    parameters: {
+      type: 'object',
+      properties: {
+        server: {
+          type: 'string',
+          description: 'MCP server name (e.g., "supabase", "calendar", "gmail")',
+        },
+        tool: {
+          type: 'string',
+          description: 'Tool name to call on the server (e.g., "execute_sql", "list_events")',
+        },
+        params: {
+          type: 'object',
+          description: 'Parameters to pass to the tool (tool-specific)',
+        },
+      },
+      required: ['server', 'tool'],
+    },
+  },
+  async: true,
+  messages: [
+    {
+      type: 'request-start',
+      content: "Let me look that up for you...",
+    },
+    {
+      type: 'request-complete',
+      content: "I found the information.",
+    },
+    {
+      type: 'request-failed',
+      content: "I couldn't retrieve that information right now.",
+    },
+  ],
+}
+
+// DTMF Handler Tool
+export const handleDTMFTool: VapiFunctionTool = {
+  type: 'function',
+  function: {
+    name: 'handleDTMF',
+    description: 'Process keypad input from caller during call. Use this to handle menu selections, PIN entry, or confirmation keypresses.',
+    parameters: {
+      type: 'object',
+      properties: {
+        digit: {
+          type: 'string',
+          description: 'The digit or key pressed (0-9, *, #)',
+          enum: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'],
+        },
+        context: {
+          type: 'string',
+          description: 'Current context (e.g., "main_menu", "pin_entry", "confirmation")',
+        },
+      },
+      required: ['digit'],
+    },
+  },
+  async: true,
+}
+
 // All function tools
 export const allFunctionTools: VapiFunctionTool[] = [
   checkCalendarTool,
@@ -622,6 +689,8 @@ export const allFunctionTools: VapiFunctionTool[] = [
   searchKnowledgeBaseTool, // RAG knowledge base search
   getCallerMemoryTool, // Caller memory: fetch profile
   updateCallerMemoryTool, // Caller memory: update profile
+  callMCPTool, // Feature 156: MCP tool bridge
+  handleDTMFTool, // Feature 155: DTMF keypad input
 ]
 
 // Default sales assistant tools

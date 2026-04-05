@@ -516,6 +516,386 @@ Set up alerts in monitoring dashboard:
 - Window: 5 minutes
 - Alert channels: Email, Slack
 
+## Multi-Tenant Setup Guide (Feature 144)
+
+### Overview
+
+The Voice AI Agent supports multi-tenancy, allowing a single deployment to serve multiple businesses/clients. Each tenant has:
+
+- **Isolated data**: Calls, contacts, campaigns, KB, caller memory
+- **Separate phone numbers**: Each tenant owns specific phone numbers
+- **Custom configuration**: Assistant ID, persona, voice, system prompt, business hours
+- **API key authentication**: Tenant-scoped API access
+
+### Step 1: Enable Multi-Tenant Tables
+
+Apply the multi-tenant migration (if not already done):
+
+```bash
+# Via Supabase CLI
+supabase db push
+
+# Or manually run migration file:
+# supabase/migrations/00X_multi_tenant.sql
+```
+
+Verify tables exist:
+
+```sql
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_name IN ('tenants', 'tenant_configs', 'tenant_api_keys');
+```
+
+### Step 2: Create Your First Tenant
+
+**Via API:**
+
+```bash
+curl -X POST https://your-domain.vercel.app/api/tenants \
+  -H "Content-Type: application/json" \
+  -H "x-admin-api-key: YOUR_ADMIN_KEY" \
+  -d '{
+    "name": "Acme Corp",
+    "slug": "acme-corp",
+    "phone_numbers": ["+15551234567", "+15559876543"],
+    "plan": "pro",
+    "settings": {
+      "feature_flags": {
+        "advanced_routing": true,
+        "sentiment_analysis": true
+      }
+    }
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "id": "tenant_abc123",
+  "name": "Acme Corp",
+  "slug": "acme-corp",
+  "phone_numbers": ["+15551234567", "+15559876543"],
+  "plan": "pro",
+  "created_at": "2026-04-04T10:00:00Z"
+}
+```
+
+### Step 3: Configure Tenant Settings
+
+Create tenant config:
+
+```bash
+curl -X POST https://your-domain.vercel.app/api/tenants/tenant_abc123/config \
+  -H "Content-Type: application/json" \
+  -H "x-admin-api-key: YOUR_ADMIN_KEY" \
+  -d '{
+    "kb_namespace": "acme-corp-kb",
+    "assistant_id": "asst_acme_123",
+    "persona_name": "Acme Sales Bot",
+    "voice_id": "21m00Tcm4TlvDq8ikWAM",
+    "system_prompt": "You are a friendly sales assistant for Acme Corp. Help customers with product inquiries and schedule demos.",
+    "timezone": "America/New_York",
+    "business_hours": {
+      "monday": { "open": "09:00", "close": "17:00" },
+      "tuesday": { "open": "09:00", "close": "17:00" },
+      "wednesday": { "open": "09:00", "close": "17:00" },
+      "thursday": { "open": "09:00", "close": "17:00" },
+      "friday": { "open": "09:00", "close": "17:00" }
+    }
+  }'
+```
+
+### Step 4: Generate Tenant API Key
+
+Create API key for tenant-scoped access:
+
+```bash
+curl -X POST https://your-domain.vercel.app/api/tenants/tenant_abc123/api-keys \
+  -H "Content-Type: application/json" \
+  -H "x-admin-api-key: YOUR_ADMIN_KEY" \
+  -d '{
+    "name": "Production API Key",
+    "scopes": ["calls:read", "calls:write", "contacts:read", "contacts:write", "kb:read"]
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "id": "key_xyz789",
+  "key": "vaa_tenant_acme-corp_a1b2c3d4e5f6...",
+  "name": "Production API Key",
+  "scopes": ["calls:read", "calls:write", "contacts:read", "contacts:write", "kb:read"],
+  "created_at": "2026-04-04T10:05:00Z"
+}
+```
+
+⚠️ **IMPORTANT**: Save the `key` value securely. It will only be shown once.
+
+### Step 5: Assign Phone Numbers
+
+Phone numbers are matched to tenants automatically based on the `phone_numbers` array in the tenant record.
+
+**Add phone number to existing tenant:**
+
+```bash
+curl -X POST https://your-domain.vercel.app/api/tenants/tenant_abc123/phone-numbers \
+  -H "Content-Type: application/json" \
+  -H "x-admin-api-key: YOUR_ADMIN_KEY" \
+  -d '{
+    "phone_number": "+15552223333"
+  }'
+```
+
+**Phone routing flow:**
+
+1. Incoming call arrives at `+15551234567`
+2. System queries `tenants` table: `WHERE phone_numbers @> ['+15551234567']`
+3. Resolves to `tenant_abc123`
+4. Loads `tenant_configs` for that tenant
+5. Uses tenant's `assistant_id`, `voice_id`, `system_prompt`
+6. All call data saved with `tenant_id = 'tenant_abc123'`
+
+### Step 6: Upload Tenant-Specific Knowledge Base
+
+Each tenant has an isolated KB namespace:
+
+```bash
+curl -X POST https://your-domain.vercel.app/api/kb/upload \
+  -H "x-tenant-api-key: vaa_tenant_acme-corp_a1b2c3d4..." \
+  -F "file=@acme-product-docs.pdf" \
+  -F "title=Acme Product Documentation"
+```
+
+Knowledge base documents are automatically scoped to `tenant_id`.
+
+### Step 7: Test Tenant Isolation
+
+**Test 1: Create contact for Tenant A**
+
+```bash
+curl -X POST https://your-domain.vercel.app/api/contacts \
+  -H "x-tenant-api-key: TENANT_A_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "full_name": "John Doe",
+    "phone_number": "+15551111111",
+    "email": "john@tenanta.com"
+  }'
+```
+
+**Test 2: Try to access from Tenant B (should fail)**
+
+```bash
+curl -X GET https://your-domain.vercel.app/api/contacts \
+  -H "x-tenant-api-key: TENANT_B_API_KEY"
+```
+
+Response should NOT include John Doe (Tenant A's contact).
+
+**Test 3: Verify call data isolation**
+
+Make calls to both tenants' phone numbers, then query:
+
+```bash
+# Tenant A calls
+curl -X GET https://your-domain.vercel.app/api/calls \
+  -H "x-tenant-api-key: TENANT_A_API_KEY"
+
+# Tenant B calls
+curl -X GET https://your-domain.vercel.app/api/calls \
+  -H "x-tenant-api-key: TENANT_B_API_KEY"
+```
+
+Verify zero overlap in call IDs.
+
+### Step 8: Onboard New Tenant (Full Flow)
+
+Use the onboarding endpoint for complete tenant setup:
+
+```bash
+curl -X POST https://your-domain.vercel.app/api/tenants/tenant_abc123/onboard \
+  -H "Content-Type: application/json" \
+  -H "x-admin-api-key: YOUR_ADMIN_KEY" \
+  -d '{
+    "vapi_assistant_id": "asst_new_tenant",
+    "vapi_phone_number_id": "ph_123456",
+    "voice_id": "elevenlabs_voice_id",
+    "system_prompt": "You are a helpful assistant for NewCo.",
+    "business_hours": {
+      "monday": { "open": "08:00", "close": "18:00" },
+      "tuesday": { "open": "08:00", "close": "18:00" },
+      "wednesday": { "open": "08:00", "close": "18:00" },
+      "thursday": { "open": "08:00", "close": "18:00" },
+      "friday": { "open": "08:00", "close": "18:00" }
+    }
+  }'
+```
+
+This endpoint:
+1. Creates `tenant_configs` record
+2. Sets up KB namespace
+3. Generates API key
+4. Applies RLS policies
+5. Returns full tenant context
+
+### Multi-Tenant Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Incoming Call                      │
+│                  +15551234567                        │
+└────────────────────┬────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────┐
+│          Tenant Router (lib/tenant-router.ts)       │
+│  SELECT * FROM tenants                              │
+│  WHERE phone_numbers @> ['+15551234567']            │
+└────────────────────┬────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────┐
+│              Tenant Context Loaded                   │
+│  tenant_id: 'tenant_abc123'                         │
+│  assistant_id: 'asst_acme_123'                      │
+│  kb_namespace: 'acme-corp-kb'                       │
+│  voice_id: '21m00Tcm4TlvDq8ikWAM'                   │
+└────────────────────┬────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────┐
+│             All Queries Scoped to Tenant            │
+│  SELECT * FROM contacts WHERE tenant_id = ?         │
+│  SELECT * FROM kb_documents WHERE tenant_id = ?     │
+│  SELECT * FROM caller_memory WHERE tenant_id = ?    │
+└─────────────────────────────────────────────────────┘
+```
+
+### Tenant Data Isolation
+
+All tenant-scoped tables include `tenant_id` column:
+
+- `contacts`
+- `voice_agent_calls`
+- `campaigns`
+- `campaign_contacts`
+- `kb_documents`
+- `kb_embeddings`
+- `caller_memory`
+- `live_transcripts`
+- `call_evaluations`
+- `mcp_registry`
+
+**RLS Policies (Row Level Security):**
+
+```sql
+-- Example: contacts table
+ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Tenants can only access their own contacts"
+  ON contacts
+  FOR ALL
+  USING (tenant_id = current_setting('app.current_tenant')::text);
+```
+
+Application code sets tenant context:
+
+```typescript
+// Before query
+await supabaseAdmin.rpc('set_config', {
+  key: 'app.current_tenant',
+  value: tenantId,
+})
+
+// Now queries are automatically scoped
+const { data } = await supabaseAdmin.from('contacts').select('*')
+// Returns only contacts for current tenant
+```
+
+### Monitoring Multi-Tenant Health
+
+**Dashboard per-tenant metrics:**
+
+```bash
+curl -X GET https://your-domain.vercel.app/api/tenants/tenant_abc123/stats \
+  -H "x-admin-api-key: YOUR_ADMIN_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "tenant_id": "tenant_abc123",
+  "calls_today": 47,
+  "calls_this_month": 1203,
+  "avg_call_duration": 145,
+  "bookings_made": 89,
+  "contacts_count": 456,
+  "kb_documents_count": 12,
+  "active_campaigns": 3
+}
+```
+
+### Troubleshooting Multi-Tenant Issues
+
+**Issue: Call not routing to correct tenant**
+
+Check phone number format:
+
+```sql
+-- Debug query
+SELECT id, name, phone_numbers
+FROM tenants
+WHERE phone_numbers @> ['+15551234567'];
+```
+
+Ensure phone number is in E.164 format (+1...) with no spaces/dashes.
+
+**Issue: Cross-tenant data leak**
+
+Verify all queries use `TenantQueryBuilder`:
+
+```typescript
+// ❌ BAD - not tenant-scoped
+const { data } = await supabaseAdmin.from('contacts').select('*')
+
+// ✅ GOOD - tenant-scoped
+const query = new TenantQueryBuilder(tenantId)
+const { data } = await query.scopeContacts()
+```
+
+**Issue: API key auth failing**
+
+Check key format and hash:
+
+```sql
+-- Verify API key exists
+SELECT id, tenant_id, name, status
+FROM tenant_api_keys
+WHERE key_hash = encode(digest('vaa_tenant_...', 'sha256'), 'hex');
+```
+
+### Default Tenant Fallback
+
+If no tenant matches the incoming phone number, the system falls back to `default` tenant:
+
+```sql
+INSERT INTO tenants (id, name, slug, phone_numbers, plan, settings)
+VALUES (
+  'default',
+  'Default Tenant',
+  'default',
+  ARRAY[]::text[],
+  'free',
+  '{}'::jsonb
+);
+```
+
 ## Next Steps
 
 - Create additional assistants for different use cases
