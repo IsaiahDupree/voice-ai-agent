@@ -408,6 +408,154 @@ All webhooks follow idempotent processing:
 - Webhook support for booking events
 - Timezone-aware scheduling
 
+## Visual Conversation Flow Builder
+
+The Flow Builder is a visual tool for designing conversation state machines without code. Built with ReactFlow, it enables drag-and-drop conversation design that exports directly to Vapi assistant configurations.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Flow Builder UI                           │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
+│  │ Flow List    │  │ReactFlow     │  │ Node Palette │     │
+│  │ Sidebar      │  │ Canvas       │  │ (drag nodes) │     │
+│  └──────────────┘  └──────────────┘  └──────────────┘     │
+│                                                              │
+│  Custom Node Components:                                    │
+│  • SpeakNode       • ListenNode      • ConditionNode       │
+│  • ToolNode        • TransferNode    • EndNode             │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+                       │ Save/Export/Simulate
+                       │
+┌──────────────────────┴───────────────────────────────────────┐
+│                    Flow Engine                               │
+│                                                              │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │  lib/flow-export.ts                                 │    │
+│  │  • Validate flow structure                          │    │
+│  │  • Generate system prompt from nodes                │    │
+│  │  • Extract function tools                           │    │
+│  │  • Export to Vapi assistant config JSON             │    │
+│  └────────────────────────────────────────────────────┘    │
+│                                                              │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │  lib/flow-simulator.ts                              │    │
+│  │  • Text-based conversation simulation               │    │
+│  │  • Mock tool execution                              │    │
+│  │  • Intent extraction & branching logic              │    │
+│  │  • Variable interpolation                           │    │
+│  └────────────────────────────────────────────────────┘    │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+                       │ REST API
+                       │
+┌──────────────────────┴───────────────────────────────────────┐
+│                    Flow API Routes                           │
+│                                                              │
+│  • POST   /api/flows               - Create flow            │
+│  • GET    /api/flows               - List flows             │
+│  • GET    /api/flows/:id           - Get flow               │
+│  • PUT    /api/flows/:id           - Update flow            │
+│  • DELETE /api/flows/:id           - Delete flow            │
+│  • POST   /api/flows/:id/export    - Export to Vapi        │
+│  • POST   /api/flows/:id/simulate  - Test flow             │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+                       │ PostgreSQL
+                       │
+┌──────────────────────┴───────────────────────────────────────┐
+│               Supabase: conversation_flows                   │
+│                                                              │
+│  • id, tenant_id, name, description                         │
+│  • nodes (JSONB) - ReactFlow node array                     │
+│  • edges (JSONB) - ReactFlow edge array                     │
+│  • version (auto-incremented on nodes/edges change)         │
+│  • vapi_assistant_id, is_active                             │
+│  • created_at, updated_at                                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Node Types
+
+| Node Type | Purpose | Key Properties |
+|-----------|---------|----------------|
+| **SpeakNode** | Agent speaks a message | `message` (supports {{variables}}) |
+| **ListenNode** | Listen for caller response | `expected_intents`, `timeout_seconds` |
+| **ConditionNode** | Branch based on condition | `condition` expression, true/false handles |
+| **ToolNode** | Call a function (Vapi or MCP) | `tool_type`, `tool_name`, `parameters`, `store_result_as` |
+| **TransferNode** | Transfer to human/external | `transfer_type`, `destination` |
+| **EndNode** | End conversation | `end_reason` (success/failure/timeout/hangup) |
+
+### Flow Export Process
+
+1. **Validation**: Check for entry node, orphaned nodes, valid structure
+2. **Traversal**: DFS from entry node, generate step-by-step instructions
+3. **System Prompt**: Convert flow graph → natural language instructions for LLM
+4. **Tool Extraction**: Identify all ToolNodes → Vapi function tool configs
+5. **Assistant Config**: Combine prompt + tools + voice settings → Vapi JSON
+6. **Vapi API Call** (optional): Create assistant in Vapi, store assistant ID
+
+### Flow Simulation
+
+Simulation runs flows in a test environment before deployment:
+
+```typescript
+// Example simulation
+const result = await simulateConversationFlow(
+  flow,
+  ['yes', 'tomorrow at 2pm', 'john@example.com'], // Mock user inputs
+  { caller_name: 'John', caller_phone: '+15555555555' } // Context
+)
+
+// Result:
+{
+  flow_name: 'Appointment Booking',
+  total_steps: 8,
+  final_outcome: 'success',
+  steps: [
+    { node_type: 'speak', agent_message: 'Hello John...' },
+    { node_type: 'listen', user_input: 'yes', extracted_intent: 'affirmative' },
+    { node_type: 'tool', tool_call: { tool_name: 'checkCalendar', result: {...} } },
+    ...
+  ]
+}
+```
+
+### Multi-Tenant Isolation
+
+- Each tenant has separate flows (via `tenant_id` FK)
+- Row Level Security policies enforce isolation
+- Flows can share MCP tool bridges (via `mcp_registry`)
+- Version control: auto-increment on every nodes/edges change
+
+### Integration with Vapi
+
+Exported flows create Vapi assistants with:
+- **System prompt**: Generated from flow graph traversal
+- **Function tools**: Extracted from ToolNodes
+- **First message**: From entry SpeakNode
+- **Voice settings**: Default or per-node overrides
+- **Model**: GPT-4o (configurable)
+
+### Example Use Cases
+
+1. **Appointment Booking**: Speak → Listen → Check Calendar (ToolNode) → Confirm → Book (ToolNode) → End
+2. **Support Routing**: Speak → Listen → Condition (intent check) → Transfer to dept A/B/C
+3. **Lead Qualification**: Multi-step listen/speak with scoring ToolNode → Condition → Transfer or End
+4. **Knowledge Base Q&A**: Speak → Listen → RAG Search (ToolNode) → Speak answer → End
+
+### Benefits
+
+- **No-code conversation design** for non-technical users
+- **Visual debugging**: See conversation paths at a glance
+- **Reusable flows**: Clone and modify existing flows
+- **Version control**: Track changes over time
+- **Testable**: Simulate before deploying to production
+- **Export portability**: JSON config works with any Vapi account
+
 ## Future Architecture Improvements
 
 1. **Redis caching**: Cache Cal.com availability for 5 minutes
