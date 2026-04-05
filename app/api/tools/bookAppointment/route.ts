@@ -1,7 +1,8 @@
 // F0958 & F0418: POST /api/tools/bookAppointment - Executes bookAppointment tool with custom location support
+// F198: Updated to use SchedulingProvider abstraction
 
 import { NextRequest, NextResponse } from 'next/server'
-import { calcomClient } from '@/lib/calcom'
+import { getSchedulingProvider } from '@/lib/scheduling'
 import { supabaseAdmin } from '@/lib/supabase'
 import { parseNaturalDate } from '@/lib/date-parser'
 import { withTelemetry } from '@/lib/tool-telemetry'
@@ -51,26 +52,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create booking via Cal.com
-    let booking
-    try {
-      booking = await calcomClient.createBooking({
-        eventTypeId: eventTypeId || 1,
-        start: startTime,
-        name,
-        email,
-        phone,
-        notes: notes || '',
-        timeZone: timezone,
-        location: location || undefined, // F0418: Pass custom location to Cal.com
-      })
-    } catch (calcomError: any) {
-      console.error('Cal.com booking error:', calcomError)
+    // Create booking via configured scheduling provider
+    const provider = getSchedulingProvider()
+
+    const bookingResult = await provider.bookAppointment({
+      customer_name: name,
+      customer_email: email,
+      customer_phone: phone,
+      start_time: startTime,
+      timezone,
+      notes: notes || '',
+      event_type_id: eventTypeId?.toString(),
+    })
+
+    if (!bookingResult.success || !bookingResult.booking) {
       return NextResponse.json(
-        { error: `Failed to create booking: ${calcomError.message}` },
+        { error: bookingResult.error || 'Failed to create booking' },
         { status: 500 }
       )
     }
+
+    const booking = bookingResult.booking
 
     // Store booking in Supabase
     const { data: dbBooking, error: dbError } = await supabaseAdmin
@@ -78,7 +80,8 @@ export async function POST(request: NextRequest) {
       .insert({
         call_id: body.call_id || null,
         contact_id: body.contact_id || null,
-        calcom_booking_id: booking.id,
+        provider_booking_id: booking.id, // F198: Provider-agnostic booking ID
+        provider_name: booking.provider, // F198: Store which provider was used
         name,
         email,
         phone_number: phone || null,
@@ -87,7 +90,7 @@ export async function POST(request: NextRequest) {
         status: 'scheduled',
         confirmation_sent: false,
         notes,
-        location: location || null, // F0418: Store custom location
+        location: location || booking.location || null, // F0418: Store custom location
         created_at: new Date().toISOString(),
       })
       .select()

@@ -1,7 +1,8 @@
 // F0403 & F0417: checkAvailability tool with natural language date parsing and multi-day support
+// F197: Updated to use SchedulingProvider abstraction
 
 import { NextRequest, NextResponse } from 'next/server'
-import { calcomClient } from '@/lib/calcom'
+import { getSchedulingProvider } from '@/lib/scheduling'
 import { parseNaturalDate } from '@/lib/date-parser'
 import { withTelemetry } from '@/lib/tool-telemetry'
 
@@ -48,66 +49,71 @@ export async function POST(request: NextRequest) {
       parsedEndDate = endDate.toISOString()
     }
 
-    // Get availability from Cal.com for date range
-    const allSlots: any[] = []
-    const slotsByDate = new Map<string, any[]>()
+    // Get availability using configured scheduling provider
+    const provider = getSchedulingProvider()
 
-    const currentDate = new Date(parsedStartDate)
-    const finalDate = new Date(parsedEndDate)
+    try {
+      const availabilityResult = await provider.checkAvailability({
+        start_date: parsedStartDate,
+        end_date: parsedEndDate,
+        duration_minutes: 30, // Default 30 min appointments
+        timezone: timezone || 'America/New_York',
+        event_type_id: eventTypeId?.toString(),
+      })
 
-    while (currentDate <= finalDate) {
-      const dateKey = currentDate.toISOString().split('T')[0]
+      // Group slots by date for summary
+      const slotsByDate = new Map<string, typeof availabilityResult.slots>()
+      const allSlots = availabilityResult.slots.filter((slot) => slot.available)
 
-      try {
-        const slots = await calcomClient.getAvailability(
-          eventTypeId || 1,
-          currentDate.toISOString()
-        )
+      allSlots.forEach((slot) => {
+        const dateKey = slot.start.split('T')[0]
+        if (!slotsByDate.has(dateKey)) {
+          slotsByDate.set(dateKey, [])
+        }
+        slotsByDate.get(dateKey)!.push(slot)
+      })
 
-        slotsByDate.set(dateKey, slots)
-        allSlots.push(...slots.map((slot: any) => ({ ...slot, date: dateKey })))
-      } catch (error) {
-        console.error(`Error fetching availability for ${dateKey}:`, error)
-        slotsByDate.set(dateKey, [])
+      // Format response for voice agent
+      const datesSummary = Array.from(slotsByDate.entries()).map(([date, slots]) => ({
+        date,
+        dateFormatted: new Date(date).toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric'
+        }),
+        slotsAvailable: slots.length,
+        firstSlot: slots[0] ? new Date(slots[0].start).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZone: timezone || 'America/New_York'
+        }) : null
+      }))
+
+      const totalSlots = allSlots.length
+      const daysWithSlots = datesSummary.filter(d => d.slotsAvailable > 0).length
+
+      const response = {
+        success: true,
+        dateRange: {
+          start: parsedStartDate,
+          end: parsedEndDate,
+          days: datesSummary.length
+        },
+        totalSlots,
+        daysWithSlots,
+        datesSummary,
+        message: totalSlots > 0
+          ? `I found ${totalSlots} available time slots across ${daysWithSlots} day${daysWithSlots === 1 ? '' : 's'}.`
+          : `Unfortunately, there are no available times in the requested date range. Would you like to try different dates?`
       }
 
-      currentDate.setDate(currentDate.getDate() + 1)
+      return NextResponse.json(response)
+    } catch (error) {
+      console.error('Availability check failed:', error)
+      return NextResponse.json(
+        { error: 'Failed to check availability. Please try again.' },
+        { status: 500 }
+      )
     }
-
-    // Format response for voice agent
-    const datesSummary = Array.from(slotsByDate.entries()).map(([date, slots]) => ({
-      date,
-      dateFormatted: new Date(date).toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric'
-      }),
-      slotsAvailable: slots.length,
-      firstSlot: slots[0] ? new Date(slots[0].time).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        timeZone: timezone || 'America/New_York'
-      }) : null
-    }))
-
-    const totalSlots = allSlots.length
-    const daysWithSlots = datesSummary.filter(d => d.slotsAvailable > 0).length
-
-    const response = {
-      success: true,
-      dateRange: {
-        start: parsedStartDate,
-        end: parsedEndDate,
-        days: datesSummary.length
-      },
-      totalSlots,
-      daysWithSlots,
-      datesSummary,
-      message: totalSlots > 0
-        ? `I found ${totalSlots} available time slots across ${daysWithSlots} day${daysWithSlots === 1 ? '' : 's'}.`
-        : `Unfortunately, there are no available times in the requested date range. Would you like to try different dates?`
-    }
-
-    return NextResponse.json(response)
   })
 }

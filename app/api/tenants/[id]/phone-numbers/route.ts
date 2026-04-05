@@ -150,7 +150,7 @@ export async function DELETE(
 
     // Remove phone number
     const currentNumbers = tenant.phone_numbers || []
-    const updatedNumbers = currentNumbers.filter((num) => num !== normalized)
+    const updatedNumbers = currentNumbers.filter((num: string) => num !== normalized)
 
     if (currentNumbers.length === updatedNumbers.length) {
       return NextResponse.json(

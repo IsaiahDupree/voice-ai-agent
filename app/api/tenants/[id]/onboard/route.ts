@@ -125,19 +125,25 @@ export async function POST(
     }
 
     // Step 4: Verify RLS policies are active
-    const { data: rlsStatus } = await supabaseAdmin.rpc('check_rls_status', {
-      table_names: [
-        'tenants',
-        'tenant_configs',
-        'campaigns',
-        'contacts',
-        'voice_agent_calls',
-        'caller_memory',
-        'kb_documents',
-        'kb_embeddings',
-        'live_transcripts',
-      ],
-    }).catch(() => ({ data: null }))
+    let rlsStatus: any = null
+    try {
+      const { data } = await supabaseAdmin.rpc('check_rls_status', {
+        table_names: [
+          'tenants',
+          'tenant_configs',
+          'campaigns',
+          'contacts',
+          'voice_agent_calls',
+          'caller_memory',
+          'kb_documents',
+          'kb_embeddings',
+          'live_transcripts',
+        ],
+      })
+      rlsStatus = data
+    } catch (error) {
+      rlsStatus = null
+    }
 
     if (rlsStatus) {
       onboardingSteps.push('RLS policies verified')

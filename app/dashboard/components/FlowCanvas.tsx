@@ -29,6 +29,7 @@ import ToolNodeComponent from './nodes/ToolNode'
 import TransferNodeComponent from './nodes/TransferNode'
 import EndNodeComponent from './nodes/EndNode'
 import NodePalette from './NodePalette'
+import FlowSimulator from './FlowSimulator'
 
 interface FlowCanvasProps {
   flow: ConversationFlow
@@ -47,6 +48,7 @@ export default function FlowCanvas({ flow, onSave, tenantId }: FlowCanvasProps) 
   const [simulating, setSimulating] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [exportResult, setExportResult] = useState<any>(null)
+  const [showInteractiveSimulator, setShowInteractiveSimulator] = useState(false)
 
   // Custom node types
   const nodeTypes = useMemo(
@@ -220,11 +222,19 @@ export default function FlowCanvas({ flow, onSave, tenantId }: FlowCanvasProps) 
           </button>
 
           <button
-            onClick={handleSimulate}
-            disabled={simulating || nodes.length === 0}
+            onClick={() => setShowInteractiveSimulator(true)}
+            disabled={nodes.length === 0}
             className="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 disabled:bg-gray-400"
           >
-            {simulating ? 'Simulating...' : '▶️ Simulate'}
+            💬 Interactive Test
+          </button>
+
+          <button
+            onClick={handleSimulate}
+            disabled={simulating || nodes.length === 0}
+            className="px-4 py-2 bg-purple-500 text-white text-sm rounded hover:bg-purple-600 disabled:bg-gray-400"
+          >
+            {simulating ? 'Simulating...' : '▶️ Batch Simulate'}
           </button>
 
           <button
@@ -296,6 +306,14 @@ export default function FlowCanvas({ flow, onSave, tenantId }: FlowCanvasProps) 
             </button>
           </div>
         </div>
+      )}
+
+      {/* Interactive Simulator */}
+      {showInteractiveSimulator && (
+        <FlowSimulator
+          flow={flow}
+          onClose={() => setShowInteractiveSimulator(false)}
+        />
       )}
     </div>
   )
