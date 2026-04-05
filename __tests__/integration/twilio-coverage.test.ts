@@ -596,4 +596,157 @@ describe('Spec vs Reality — Field Validation', () => {
     })
     expect(status).toBe(401)
   })
+
+  test('POST /Calls without required Url/Twiml returns 400', async () => {
+    const { status } = await coreRequest(
+      'POST',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Calls.json`,
+      {
+        From: PHONE_NUMBER,
+        To: '+12125551234',
+        // Url and Twiml both omitted — should be 400
+      }
+    )
+    expect(status).toBe(400)
+  })
+
+  test('message status field is a valid Twilio status', () => {
+    if (messages.length === 0) return
+    const validStatuses = ['queued', 'sending', 'sent', 'delivered', 'undelivered', 'failed', 'received', 'accepted', 'scheduled', 'read', 'partially_delivered', 'canceled']
+    messages.forEach((m: any) => {
+      expect(validStatuses).toContain(m.status)
+    })
+  })
+})
+
+// =============================================================================
+// ADDRESSES — API-only resource (regulatory compliance)
+// =============================================================================
+describe('API-Only — Addresses', () => {
+  test('GET /Addresses returns 200', async () => {
+    const { status, data } = await coreRequest(
+      'GET',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Addresses.json`
+    )
+    expect(status).toBe(200)
+    expect(Array.isArray(data.addresses)).toBe(true)
+  })
+
+  test('addresses have expected fields if any exist', async () => {
+    const { data } = await coreRequest(
+      'GET',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Addresses.json`
+    )
+    data.addresses?.forEach((addr: any) => {
+      expect(addr.sid).toMatch(/^AD[a-f0-9]{32}$/)
+      expect(typeof addr.customer_name).toBe('string')
+      expect(typeof addr.street).toBe('string')
+      expect(typeof addr.iso_country).toBe('string')
+    })
+  })
+})
+
+// =============================================================================
+// CALL QUEUES — API-only resource
+// =============================================================================
+describe('API-Only — Call Queues', () => {
+  test('GET /Queues returns 200', async () => {
+    const { status, data } = await coreRequest(
+      'GET',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Queues.json`
+    )
+    expect(status).toBe(200)
+    expect(Array.isArray(data.queues)).toBe(true)
+  })
+
+  test('queues have expected fields if any exist', async () => {
+    const { data } = await coreRequest(
+      'GET',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Queues.json`
+    )
+    data.queues?.forEach((q: any) => {
+      expect(q.sid).toMatch(/^QU[a-f0-9]{32}$/)
+      expect(typeof q.friendly_name).toBe('string')
+      expect(typeof q.max_size).toBe('number')
+      expect(q.max_size).toBeLessThanOrEqual(5000)
+    })
+  })
+})
+
+// =============================================================================
+// USAGE TRIGGERS — API-only resource (billing alerts)
+// =============================================================================
+describe('API-Only — Usage Triggers', () => {
+  test('GET /Usage/Triggers returns 200', async () => {
+    const { status, data } = await coreRequest(
+      'GET',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Usage/Triggers.json`
+    )
+    expect(status).toBe(200)
+    expect(Array.isArray(data.usage_triggers)).toBe(true)
+  })
+
+  test('triggers have expected fields if any exist', async () => {
+    const { data } = await coreRequest(
+      'GET',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Usage/Triggers.json`
+    )
+    data.usage_triggers?.forEach((t: any) => {
+      expect(t.sid).toMatch(/^UT[a-f0-9]{32}$/)
+      expect(typeof t.usage_category).toBe('string')
+      expect(typeof t.callback_url).toBe('string')
+    })
+  })
+})
+
+// =============================================================================
+// CONFERENCES — API-only resource
+// =============================================================================
+describe('API-Only — Conferences', () => {
+  test('GET /Conferences returns 200', async () => {
+    const { status, data } = await coreRequest(
+      'GET',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Conferences.json?PageSize=5`
+    )
+    expect(status).toBe(200)
+    expect(Array.isArray(data.conferences)).toBe(true)
+  })
+
+  test('conference records have expected fields if any exist', async () => {
+    const { data } = await coreRequest(
+      'GET',
+      `/2010-04-01/Accounts/${ACCOUNT_SID}/Conferences.json?PageSize=5`
+    )
+    data.conferences?.forEach((c: any) => {
+      expect(c.sid).toMatch(/^CF[a-f0-9]{32}$/)
+      expect(['init', 'in-progress', 'completed']).toContain(c.status)
+    })
+  })
+})
+
+// =============================================================================
+// MESSAGING SERVICE PHONE NUMBER POOL — API-only
+// =============================================================================
+describe('API-Only — Messaging Service Phone Number Pool', () => {
+  test('messaging service phone number pool is accessible', async () => {
+    if (messagingServices.length === 0) return
+    const svc = messagingServices[0]
+    const { status, data } = await messagingRequest(
+      'GET',
+      `/v1/Services/${svc.sid}/PhoneNumbers`
+    )
+    expect(status).toBe(200)
+    expect(Array.isArray(data.phone_numbers)).toBe(true)
+  })
+})
+
+// =============================================================================
+// DEACTIVATIONS — API-only (US number deactivation list)
+// =============================================================================
+describe('API-Only — Deactivations', () => {
+  test('GET /v1/Deactivations returns 200 or 404 (endpoint exists)', async () => {
+    const { status } = await messagingRequest('GET', '/v1/Deactivations')
+    // 200 = has data, 400 = missing Date param (endpoint exists), 404 = unexpected
+    expect([200, 400]).toContain(status)
+  })
 })
