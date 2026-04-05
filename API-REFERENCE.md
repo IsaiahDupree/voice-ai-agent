@@ -529,3 +529,429 @@ X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
 X-RateLimit-Reset: 1711627200
 ```
+
+## MCP Bridge (Feature 164)
+
+### Overview
+
+The MCP (Model Context Protocol) Bridge allows Vapi function tools to call any registered MCP server. This enables the voice agent to:
+- Execute database queries via Supabase MCP
+- Access calendar events via Calendar MCP
+- Send emails via Gmail MCP
+- Call any custom MCP server registered in the tenant's registry
+
+### MCP Tool Bridge
+
+#### POST /api/tools/mcp-bridge
+Call an MCP server tool during a Vapi call
+
+**Headers:**
+- `x-current-tenant-id` (optional): Tenant ID (defaults to 'default')
+- `Content-Type: application/json`
+
+**Request Body:**
+```json
+{
+  "server": "supabase",
+  "tool": "execute_sql",
+  "params": {
+    "query": "SELECT * FROM contacts WHERE phone_number = '+15551234567'"
+  },
+  "tenant_id": "default"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "result": [
+    {
+      "id": 1,
+      "full_name": "John Doe",
+      "phone_number": "+15551234567",
+      "email": "john@example.com"
+    }
+  ],
+  "server": "supabase",
+  "tool": "execute_sql"
+}
+```
+
+**Error Response:** `404 Not Found`
+```json
+{
+  "error": "MCP server 'supabase' not found or not active for tenant"
+}
+```
+
+**Error Response:** `500 Internal Server Error`
+```json
+{
+  "error": "MCP Error: Connection timeout",
+  "server": "supabase",
+  "tool": "execute_sql"
+}
+```
+
+#### GET /api/tools/mcp-bridge
+List registered MCP servers and their tools
+
+**Query Parameters:**
+- `tenant_id` (optional): Tenant ID (default: 'default')
+- `server` (optional): Get details for specific server
+
+**Response (all servers):**
+```json
+{
+  "servers": [
+    {
+      "id": "uuid-1",
+      "server_name": "supabase",
+      "server_url": "http://localhost:3100/mcp",
+      "status": "active",
+      "enabled_tools": ["execute_sql", "list_tables", "apply_migration"],
+      "last_health_check_at": "2026-04-04T10:00:00Z"
+    },
+    {
+      "id": "uuid-2",
+      "server_name": "calendar",
+      "server_url": "http://localhost:3200/mcp",
+      "status": "active",
+      "enabled_tools": ["list_events", "create_event", "delete_event"],
+      "last_health_check_at": "2026-04-04T10:00:00Z"
+    }
+  ],
+  "count": 2
+}
+```
+
+**Response (specific server):**
+```json
+{
+  "server": {
+    "name": "supabase",
+    "url": "http://localhost:3100/mcp",
+    "status": "active",
+    "enabled_tools": ["execute_sql", "list_tables", "apply_migration"]
+  },
+  "health": {
+    "status": "healthy",
+    "latency_ms": 45,
+    "last_check": "2026-04-04T10:00:00Z"
+  }
+}
+```
+
+### MCP Registry Management
+
+#### GET /api/mcp/registry
+List all registered MCP servers for a tenant
+
+**Query Parameters:**
+- `tenant_id` (required): Tenant ID
+
+**Response:**
+```json
+{
+  "servers": [
+    {
+      "id": "uuid-1",
+      "server_name": "supabase",
+      "server_url": "http://localhost:3100/mcp",
+      "auth_type": "api_key",
+      "enabled_tools": ["execute_sql", "list_tables"],
+      "status": "active",
+      "description": "Supabase database MCP server",
+      "created_at": "2026-04-04T08:00:00Z"
+    }
+  ]
+}
+```
+
+#### POST /api/mcp/registry
+Register a new MCP server
+
+**Request Body:**
+```json
+{
+  "tenant_id": "default",
+  "server_name": "custom-api",
+  "server_url": "https://api.example.com/mcp",
+  "auth_type": "bearer_token",
+  "auth_config": {
+    "token": "bearer_token_here"
+  },
+  "enabled_tools": ["search", "create", "update"],
+  "description": "Custom API MCP server"
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": "uuid-3",
+  "server_name": "custom-api",
+  "status": "active",
+  "created_at": "2026-04-04T10:30:00Z"
+}
+```
+
+#### POST /api/mcp/test
+Test an MCP tool call
+
+**Request Body:**
+```json
+{
+  "tenant_id": "default",
+  "server": "supabase",
+  "tool": "execute_sql",
+  "params": {
+    "query": "SELECT 1"
+  }
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "result": [{ "?column?": 1 }],
+  "latency_ms": 45
+}
+```
+
+#### GET /api/mcp/tools/:server
+List available tools for a specific MCP server
+
+**Path Parameters:**
+- `server`: MCP server name
+
+**Query Parameters:**
+- `tenant_id` (required): Tenant ID
+
+**Response:**
+```json
+{
+  "server": "supabase",
+  "tools": [
+    {
+      "name": "execute_sql",
+      "description": "Execute a SQL query",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "SQL query to execute"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "list_tables",
+      "description": "List all tables in the database",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}
+```
+
+### Vapi Function Tool Integration
+
+The MCP bridge is exposed as a Vapi function tool named `callMCPTool`:
+
+**Function Definition:**
+```typescript
+{
+  type: 'function',
+  function: {
+    name: 'callMCPTool',
+    description: 'Call any registered MCP server tool. Use this to execute database queries, access calendars, or call other backend services.',
+    parameters: {
+      type: 'object',
+      properties: {
+        server: {
+          type: 'string',
+          description: 'MCP server name (e.g., "supabase", "calendar")'
+        },
+        tool: {
+          type: 'string',
+          description: 'Tool name to call (e.g., "execute_sql", "list_events")'
+        },
+        params: {
+          type: 'object',
+          description: 'Parameters to pass to the tool (tool-specific)'
+        }
+      },
+      required: ['server', 'tool']
+    }
+  }
+}
+```
+
+**Example Usage in Call:**
+
+Agent: "Let me look up your account information."
+
+*Agent calls tool:*
+```json
+{
+  "function": "callMCPTool",
+  "arguments": {
+    "server": "supabase",
+    "tool": "execute_sql",
+    "params": {
+      "query": "SELECT * FROM customers WHERE phone = '+15551234567'"
+    }
+  }
+}
+```
+
+*Tool returns:*
+```json
+{
+  "success": true,
+  "result": [
+    {
+      "id": 123,
+      "name": "Jane Smith",
+      "account_number": "ACC-789",
+      "status": "active"
+    }
+  ]
+}
+```
+
+Agent: "I found your account, Jane. Your account number is ACC-789 and your account is active."
+
+### Supported MCP Servers
+
+#### Supabase MCP
+**Server Name:** `supabase`
+**Tools:**
+- `execute_sql`: Run SQL queries
+- `list_tables`: Get database tables
+- `get_table_schema`: Get table structure
+- `apply_migration`: Apply database migration
+- `list_migrations`: List applied migrations
+
+#### Calendar MCP (Google Calendar)
+**Server Name:** `calendar`
+**Tools:**
+- `list_events`: Get calendar events
+- `get_event`: Get event details
+- `create_event`: Create new event
+- `update_event`: Modify event
+- `delete_event`: Remove event
+- `find_free_slots`: Find available time slots
+
+#### Gmail MCP
+**Server Name:** `gmail`
+**Tools:**
+- `send_email`: Send email
+- `search_emails`: Search inbox
+- `get_email`: Get email details
+- `list_labels`: Get Gmail labels
+
+### MCP Protocol (JSON-RPC 2.0)
+
+All MCP servers use JSON-RPC 2.0 over HTTP.
+
+**Request Format:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 123456789,
+  "method": "tools/call",
+  "params": {
+    "name": "execute_sql",
+    "arguments": {
+      "query": "SELECT * FROM users"
+    }
+  }
+}
+```
+
+**Success Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 123456789,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Query executed successfully"
+      }
+    ]
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 123456789,
+  "error": {
+    "code": -32602,
+    "message": "Invalid params: 'query' is required"
+  }
+}
+```
+
+### Security & Authentication
+
+MCP servers support multiple auth types:
+
+1. **None**: No authentication required
+2. **API Key**: Custom header with API key
+   ```json
+   {
+     "auth_type": "api_key",
+     "auth_config": {
+       "header_name": "X-API-Key",
+       "api_key": "your_api_key_here"
+     }
+   }
+   ```
+
+3. **Bearer Token**: OAuth-style bearer token
+   ```json
+   {
+     "auth_type": "bearer_token",
+     "auth_config": {
+       "token": "your_bearer_token"
+     }
+   }
+   ```
+
+4. **Basic Auth**: Username + password
+   ```json
+   {
+     "auth_type": "basic",
+     "auth_config": {
+       "username": "user",
+       "password": "pass"
+     }
+   }
+   ```
+
+### Error Handling
+
+The MCP bridge handles errors gracefully:
+
+1. **Connection Timeout**: Returns error after 10 seconds
+2. **Invalid Tool**: Returns `404` if tool not in enabled_tools
+3. **MCP Server Error**: Returns MCP error message
+4. **Invalid JSON-RPC**: Returns parse error
+
+All errors include:
+- `error`: Human-readable error message
+- `server`: Server name that failed
+- `tool`: Tool name that failed
