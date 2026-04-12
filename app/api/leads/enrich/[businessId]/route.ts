@@ -232,7 +232,7 @@ export async function POST(
           },
           { onConflict: 'business_id' }
         )
-        .catch(() => {}) // Suppress errors
+        // Suppress errors — void return
     }
 
     return NextResponse.json(

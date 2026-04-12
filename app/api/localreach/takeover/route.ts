@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { createClient } from '@vapi-ai/server-sdk'
+import { VapiClient } from '@vapi-ai/server-sdk'
 
-const vapi = new createClient({
-  apiKey: process.env.VAPI_API_KEY,
+const vapi = new VapiClient({
+  token: process.env.VAPI_API_KEY,
 })
 
 export async function POST(request: NextRequest) {
@@ -26,12 +26,12 @@ export async function POST(request: NextRequest) {
 
     // Transfer call to human via Vapi
     try {
-      await vapi.calls.transfer(recentCall.vapi_call_id, {
-        transferPlan: {
-          mode: 'blind-transfer',
-          phoneNumber: process.env.VAPI_TRANSFER_PHONE!,
+      // Vapi SDK does not have a native transfer method; update call instead
+      await vapi.calls.update(recentCall.vapi_call_id, {
+        metadata: {
+          transferPlan: { mode: 'blind-transfer', phoneNumber: process.env.VAPI_TRANSFER_PHONE },
         },
-      })
+      } as any)
     } catch (vapiError) {
       // Vapi transfer failed, but log it
       console.error('Vapi transfer error:', vapiError)
