@@ -11,8 +11,16 @@ export default defineConfig({
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
   projects: [
+    {
+      name: 'chromium-desktop',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 800 },
+      },
+    },
     {
       name: 'iphone-se',
       use: {

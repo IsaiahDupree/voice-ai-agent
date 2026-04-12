@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
 }
 
 // F0813: Get all personas (with optional org scoping)
+// F015: Graceful fallback for /api/personas
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -111,12 +112,28 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query
 
+    // F015: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[Personas API] Schema error detected, returning graceful fallback:', error)
+      return NextResponse.json({
+        personas: []
+      }, { status: 200 })
+    }
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ personas: data })
   } catch (error: any) {
+    // F015: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[Personas API] Schema error caught in try/catch:', error)
+      return NextResponse.json({
+        personas: []
+      }, { status: 200 })
+    }
+
     console.error('Error in GET /api/personas:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

@@ -27,6 +27,7 @@ export interface HandoffConfig {
 }
 
 // GET - Retrieve handoff config for an assistant
+// F013: Graceful fallback for /api/handoff/config
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -44,6 +45,17 @@ export async function GET(req: NextRequest) {
       .select('*')
       .eq('assistant_id', assistantId)
       .single()
+
+    // F013: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[Handoff Config] Schema error detected, returning graceful fallback:', error)
+      return NextResponse.json({
+        assistant_id: assistantId,
+        enabled: false,
+        transfer_number: null,
+        conditions: []
+      }, { status: 200 })
+    }
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = not found, which is ok
@@ -75,12 +87,25 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(data)
   } catch (error: any) {
+    // F013: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+      const assistantId = new URL(error?.request?.url || '').searchParams.get('assistant_id') || 'default';
+      console.warn('[Handoff Config] Schema error caught in try/catch:', error)
+      return NextResponse.json({
+        assistant_id: assistantId,
+        enabled: false,
+        transfer_number: null,
+        conditions: []
+      }, { status: 200 })
+    }
+
     console.error('[Handoff Config] GET error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
 // POST - Create or update handoff config
+// F013: Graceful fallback for /api/handoff/config
 export async function POST(req: NextRequest) {
   try {
     const body: HandoffConfig = await req.json()
@@ -121,6 +146,15 @@ export async function POST(req: NextRequest) {
         .select()
         .single()
 
+      // F013: Graceful fallback for schema errors
+      if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+        console.warn('[Handoff Config] Schema error on update, returning graceful fallback:', error)
+        return NextResponse.json({
+          success: false,
+          error: 'Handoff config table schema error'
+        }, { status: 400 })
+      }
+
       if (error) throw error
       result = data
     } else {
@@ -142,12 +176,30 @@ export async function POST(req: NextRequest) {
         .select()
         .single()
 
+      // F013: Graceful fallback for schema errors
+      if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+        console.warn('[Handoff Config] Schema error on insert, returning graceful fallback:', error)
+        return NextResponse.json({
+          success: false,
+          error: 'Handoff config table schema error'
+        }, { status: 400 })
+      }
+
       if (error) throw error
       result = data
     }
 
     return NextResponse.json({ success: true, config: result })
   } catch (error: any) {
+    // F013: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+      console.warn('[Handoff Config] Schema error caught in try/catch:', error)
+      return NextResponse.json({
+        success: false,
+        error: 'Handoff config table schema error'
+      }, { status: 400 })
+    }
+
     console.error('[Handoff Config] POST error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

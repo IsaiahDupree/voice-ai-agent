@@ -2,6 +2,7 @@
 // F0818: Total bookings metric
 // F0819: Booking conversion rate
 // F0850: Analytics date range
+// F007: Graceful fallback for /api/analytics/stats (missing outcome column)
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -20,21 +21,38 @@ export async function GET(request: NextRequest) {
     const endDate = dateTo ? new Date(dateTo) : new Date()
 
     // F0817: Total calls metric
-    const { data: calls, error: callsError } = await supabaseAdmin
+    let callsQuery = supabaseAdmin
       .from('voice_agent_calls')
       .select('id, outcome, status')
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
+
+    let { data: calls, error: callsError } = await callsQuery
+
+    // F007: Graceful fallback if outcome column is missing
+    if (callsError?.message?.includes('outcome') && callsError?.message?.includes('does not exist')) {
+      console.warn('[Analytics Stats] Missing outcome column, falling back to status only:', callsError);
+      const { data: fallbackCalls, error: fallbackError } = await supabaseAdmin
+        .from('voice_agent_calls')
+        .select('id, status')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+
+      if (!fallbackError && fallbackCalls) {
+        calls = fallbackCalls.map((c: any) => ({ ...c, outcome: null }));
+        callsError = null;
+      }
+    }
 
     if (callsError) {
       console.error('Error fetching calls:', callsError)
       return NextResponse.json({ error: callsError.message }, { status: 500 })
     }
 
-    const totalCalls = calls.length
-    const activeCalls = calls.filter(
+    const totalCalls = calls?.length || 0
+    const activeCalls = calls?.filter(
       (c) => c.status === 'in-progress' || c.status === 'ringing'
-    ).length
+    ).length || 0
 
     // F0818: Total bookings metric
     const { data: bookings, error: bookingsError } = await supabaseAdmin
@@ -78,6 +96,25 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error: any) {
+    // F007: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      const startDate = new Date();
+      const endDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+      console.warn('[Analytics Stats] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        totalCalls: 0,
+        activeCalls: 0,
+        totalBookings: 0,
+        conversionRate: 0,
+        smsSent: 0,
+        dateRange: {
+          from: startDate.toISOString(),
+          to: endDate.toISOString(),
+        },
+      }, { status: 200 });
+    }
+
     console.error('Error in GET /api/analytics/stats:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

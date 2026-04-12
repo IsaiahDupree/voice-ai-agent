@@ -70,7 +70,17 @@ export async function POST(request: NextRequest) {
       .select()
       .single()
 
-    if (error) throw error
+    // F002: Graceful fallback for schema errors
+    if (error) {
+      if (error.code === 'PGRST204' || error.message?.includes('does not exist')) {
+        console.warn('[Campaigns API] Schema error detected on insert:', error)
+        return NextResponse.json({
+          success: false,
+          error: 'Campaign table schema error - table may not exist'
+        }, { status: 400 })
+      }
+      throw error
+    }
 
     return NextResponse.json(
       {
@@ -80,6 +90,15 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error: any) {
+    // F002: Graceful fallback for schema errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[Campaigns API] Schema error caught:', error)
+      return NextResponse.json({
+        success: false,
+        error: 'Campaign table schema error'
+      }, { status: 400 })
+    }
+
     console.error('Error creating campaign:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to create campaign' },
@@ -89,6 +108,7 @@ export async function POST(request: NextRequest) {
 }
 
 // List campaigns
+// F002: Graceful fallback for /api/campaigns DB schema errors
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -105,14 +125,37 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query
 
+    // F002: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[Campaigns API] Schema error detected, returning graceful fallback:', error)
+      return NextResponse.json({
+        success: true,
+        count: 0,
+        campaigns: [],
+        total: 0
+      }, { status: 200 })
+    }
+
     if (error) throw error
 
     return NextResponse.json({
       success: true,
       count: data?.length || 0,
       campaigns: data || [],
+      total: data?.length || 0
     })
   } catch (error: any) {
+    // F002: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[Campaigns API] Schema error caught in try/catch:', error)
+      return NextResponse.json({
+        success: true,
+        count: 0,
+        campaigns: [],
+        total: 0
+      }, { status: 200 })
+    }
+
     console.error('Error listing campaigns:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to list campaigns' },

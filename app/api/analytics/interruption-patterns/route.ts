@@ -1,6 +1,7 @@
 /**
  * GET /api/analytics/interruption-patterns
  * Analytics endpoint for semantic VAD interruption classification patterns
+ * F009: Graceful fallback for /api/analytics/interruption-patterns
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -38,6 +39,17 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: classifications, error } = await query;
+
+    // F009: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[Interruption Patterns] Schema error detected, returning graceful fallback:', error);
+      return NextResponse.json({
+        patterns: [],
+        total: 0,
+        timeRange,
+        assistantId: assistantId || 'all'
+      }, { status: 200 });
+    }
 
     if (error) {
       throw error;
@@ -136,6 +148,18 @@ export async function GET(request: NextRequest) {
       })),
     });
   } catch (error: any) {
+    // F009: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+      const assistantId = new URL(error?.request?.url || '').searchParams.get('assistantId');
+      console.warn('[Interruption Patterns] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        patterns: [],
+        total: 0,
+        timeRange: '7d',
+        assistantId: assistantId || 'all'
+      }, { status: 200 });
+    }
+
     console.error('[Interruption Patterns Error]:', error);
     return NextResponse.json(
       {

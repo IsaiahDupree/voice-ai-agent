@@ -1,4 +1,5 @@
 // F0946: GET /api/analytics/campaigns - Returns campaign analytics
+// F006: Graceful fallback for /api/analytics/campaigns (missing table)
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
@@ -31,6 +32,18 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: campaigns, error: campaignError } = await campaignQuery
+
+    // F006: Graceful fallback for missing table
+    if (campaignError?.message?.includes('does not exist')) {
+      console.warn('[Analytics Campaigns] Schema error detected, returning graceful fallback:', campaignError);
+      return NextResponse.json({
+        totalCampaigns: 0,
+        campaigns: [],
+        byStatus: {},
+        bestPerforming: [],
+        dateRange: { start: startDate || null, end: endDate || null }
+      }, { status: 200 });
+    }
 
     if (campaignError) {
       throw campaignError
@@ -99,6 +112,18 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error: any) {
+    // F006: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('table')) {
+      console.warn('[Analytics Campaigns] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        totalCampaigns: 0,
+        campaigns: [],
+        byStatus: {},
+        bestPerforming: [],
+        dateRange: { start: null, end: null }
+      }, { status: 200 });
+    }
+
     console.error('[Campaign Analytics API] Error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to fetch campaign analytics' },

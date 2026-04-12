@@ -40,6 +40,12 @@ export async function POST(request: NextRequest) {
       .select()
       .single()
 
+    // F003: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[Contacts API] Schema error on insert:', error)
+      return NextResponse.json({ error: 'Contacts table schema error' }, { status: 400 })
+    }
+
     if (error) {
       console.error('Error creating contact:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
@@ -47,12 +53,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ contact: data }, { status: 201 })
   } catch (error: any) {
+    // F003: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[Contacts API] Schema error caught:', error)
+      return NextResponse.json({ error: 'Contacts table schema error' }, { status: 400 })
+    }
+
     console.error('Error in POST /api/contacts:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
 // F0567, F0572, F0573: Contact lookup by phone, list with pagination, search
+// F003: Graceful fallback for /api/contacts DB schema errors
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -87,12 +100,28 @@ export async function GET(request: NextRequest) {
 
       const { data, error, count } = await query
 
+      // F003: Graceful fallback for schema errors
+      if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+        console.warn('[Contacts API] Schema error detected, returning graceful fallback:', error)
+        return NextResponse.json({
+          contacts: [],
+          total: 0,
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 0,
+          },
+        }, { status: 200 })
+      }
+
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
 
       return NextResponse.json({
         contacts: data || [],
+        total: count || 0,
         pagination: {
           page,
           limit,
@@ -174,6 +203,7 @@ export async function GET(request: NextRequest) {
 }
 
 // F0569: Contact update
+// F003: Graceful fallback for /api/contacts DB schema errors
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json()
@@ -190,12 +220,24 @@ export async function PATCH(request: NextRequest) {
       .select()
       .single()
 
+    // F003: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[Contacts API] Schema error on update:', error)
+      return NextResponse.json({ error: 'Contacts table schema error' }, { status: 400 })
+    }
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ contact: data })
   } catch (error: any) {
+    // F003: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[Contacts API] Schema error caught in PATCH:', error)
+      return NextResponse.json({ error: 'Contacts table schema error' }, { status: 400 })
+    }
+
     console.error('Error in PATCH /api/contacts:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

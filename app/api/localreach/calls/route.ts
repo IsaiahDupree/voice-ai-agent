@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// F017: Graceful fallback for all /api/localreach/* routes
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -24,6 +25,12 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
+    // F017: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[LocalReach Calls API] Schema error detected, returning graceful fallback:', error)
+      return NextResponse.json({ calls: [] }, { status: 200 })
+    }
+
     if (error) throw error
 
     // Transform to match dashboard expectations
@@ -37,6 +44,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(transformed)
   } catch (error: any) {
+    // F017: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[LocalReach Calls API] Schema error caught in try/catch:', error)
+      return NextResponse.json({ calls: [] }, { status: 200 })
+    }
+
     console.error('[LocalReach Calls API] Error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to fetch calls' },

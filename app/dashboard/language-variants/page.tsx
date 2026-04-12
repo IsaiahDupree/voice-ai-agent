@@ -49,6 +49,7 @@ export default function LanguageVariantsPage() {
   const [creating, setCreating] = useState(false);
   const [baseAssistantId, setBaseAssistantId] = useState('');
   const [tenantId, setTenantId] = useState('default');
+  const [configError, setConfigError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<Partial<LanguageVariant>>({
     language_code: 'es',
@@ -58,6 +59,16 @@ export default function LanguageVariantsPage() {
     stt_language: '',
     tts_language: '',
   });
+
+  // F022: Check if OpenAI/voice configuration is available
+  useEffect(() => {
+    try {
+      getVoicesForLanguage('es');
+      setConfigError(null);
+    } catch (error: any) {
+      setConfigError('OpenAI API key not configured — set OPENAI_API_KEY in Vercel environment variables');
+    }
+  }, []);
 
   useEffect(() => {
     loadVariants();
@@ -175,6 +186,13 @@ export default function LanguageVariantsPage() {
         <p className="text-gray-600 mb-8">
           Configure multilingual assistant variants for automatic language detection and switching
         </p>
+
+        {/* Configuration Error */}
+        {configError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-red-700">{configError}</p>
+          </div>
+        )}
 
         {/* Configuration */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">

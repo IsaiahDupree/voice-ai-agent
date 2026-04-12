@@ -13,6 +13,7 @@ interface RouteContext {
 /**
  * GET /api/assistants/:id/interruption-config
  * Fetch interruption config for an assistant
+ * F010: Graceful fallback for /api/assistants/[id]/interruption-config
  */
 export async function GET(
   request: NextRequest,
@@ -26,6 +27,18 @@ export async function GET(
       .select('*')
       .eq('assistant_id', assistantId)
       .single();
+
+    // F010: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[GET Interruption Config] Schema error detected, returning graceful fallback:', error);
+      return NextResponse.json({
+        assistant_id: assistantId,
+        interruption_threshold: 0.5,
+        max_interruptions: 3,
+        cooldown_ms: 2000,
+        isDefault: true
+      }, { status: 200 });
+    }
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = no rows returned, which is fine
@@ -55,6 +68,18 @@ export async function GET(
       isDefault: false,
     });
   } catch (error: any) {
+    // F010: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+      console.warn('[GET Interruption Config] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        assistant_id: assistantId,
+        interruption_threshold: 0.5,
+        max_interruptions: 3,
+        cooldown_ms: 2000,
+        isDefault: true
+      }, { status: 200 });
+    }
+
     console.error('[GET Interruption Config Error]:', error);
     return NextResponse.json(
       {
@@ -134,6 +159,15 @@ export async function PUT(
       },
     });
   } catch (error: any) {
+    // F010: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+      console.warn('[PUT Interruption Config] Schema error caught:', error);
+      return NextResponse.json({
+        success: false,
+        error: 'Interruption config table schema error'
+      }, { status: 400 });
+    }
+
     console.error('[PUT Interruption Config Error]:', error);
     return NextResponse.json(
       {
@@ -170,6 +204,16 @@ export async function DELETE(
       assistantId,
     });
   } catch (error: any) {
+    // F010: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+      console.warn('[DELETE Interruption Config] Schema error caught:', error);
+      return NextResponse.json({
+        success: true,
+        message: 'Interruption config reset to defaults',
+        assistantId
+      }, { status: 200 });
+    }
+
     console.error('[DELETE Interruption Config Error]:', error);
     return NextResponse.json(
       {

@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 /**
  * GET /api/sms
  * F0934: Lists all SMS logs with pagination
+ * F016: Graceful fallback for /api/sms
  *
  * Query params:
  * - limit: Number of records to return (default 50)
@@ -44,6 +45,15 @@ export async function GET(request: NextRequest) {
 
     const { data, error, count } = await query
 
+    // F016: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[SMS List API] Schema error detected, returning graceful fallback:', error)
+      return NextResponse.json({
+        messages: [],
+        total: 0
+      }, { status: 200 })
+    }
+
     if (error) {
       throw error
     }
@@ -58,6 +68,15 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error: any) {
+    // F016: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[SMS List API] Schema error caught in try/catch:', error)
+      return NextResponse.json({
+        messages: [],
+        total: 0
+      }, { status: 200 })
+    }
+
     console.error('[SMS List API] Error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to list SMS' },

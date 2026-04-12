@@ -71,6 +71,7 @@ export default function EnhancedDashboard() {
   const [error, setError] = useState<string | null>(null) // F0734: Dashboard error state
   const [smsLogs, setSmsLogs] = useState<any[]>([]) // F0739: SMS logs
   const [refreshing, setRefreshing] = useState(false) // F0743: Refresh state
+  const [isRealtimeAvailable, setIsRealtimeAvailable] = useState(true) // F023: Real-time availability
 
   // F0695: Call detail drawer state
   const [selectedCallId, setSelectedCallId] = useState<string | null>(null)
@@ -88,6 +89,19 @@ export default function EnhancedDashboard() {
 
   // F0692, F0693: WebSocket connection with auto-reconnect
   const { connected: wsConnected, lastUpdate: wsLastUpdate } = useRealtimeCalls()
+
+  // F023: Monitor WebSocket connection and set real-time availability
+  useEffect(() => {
+    // If WebSocket has been disconnected for more than 30 seconds, mark real-time as unavailable
+    if (!wsConnected && wsLastUpdate) {
+      const timeSinceLastUpdate = Date.now() - wsLastUpdate.getTime()
+      if (timeSinceLastUpdate > 30000) {
+        setIsRealtimeAvailable(false)
+      }
+    } else if (wsConnected) {
+      setIsRealtimeAvailable(true)
+    }
+  }, [wsConnected, wsLastUpdate])
 
   // F0691: Real-time update - poll every 5s as fallback
   useEffect(() => {
@@ -305,6 +319,26 @@ export default function EnhancedDashboard() {
             </a>
           </div>
         </div>
+
+        {/* F023: Real-time unavailability warning */}
+        {!isRealtimeAvailable && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+            <svg className="w-5 h-5 text-yellow-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-yellow-800">
+                Real-time updates unavailable on serverless — refresh to update
+              </p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              className="text-sm text-yellow-700 hover:text-yellow-900 font-medium"
+            >
+              Refresh Now
+            </button>
+          </div>
+        )}
 
         {/* F0713: Stats cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">

@@ -1,0 +1,866 @@
+{
+  "crawled_at": "2026-04-12T15:52:36.951Z",
+  "base_url": "https://voice-ai-agent-roan.vercel.app",
+  "total_routes_scanned": 39,
+  "total_errors": 132,
+  "errors_by_type": {
+    "page-404": 26,
+    "network-error": 91,
+    "page-500": 3,
+    "js-error": 3,
+    "api-error": 9
+  },
+  "errors": [
+    {
+      "route": "/dashboard",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=tlnoa",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=tlnoa",
+      "status": 404
+    },
+    {
+      "route": "/dashboard",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/bookings?limit=5",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/bookings?limit=5",
+      "status": 404
+    },
+    {
+      "route": "/dashboard",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=tlnoa",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=tlnoa",
+      "status": 404
+    },
+    {
+      "route": "/dashboard",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/bookings?limit=5",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/bookings?limit=5",
+      "status": 404
+    },
+    {
+      "route": "/dashboard",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/campaigns?status=active&limit=5",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/campaigns?status=active&limit=5",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/business-context",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/business-context",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=15n7i",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=15n7i",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/business-context",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=15n7i",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=15n7i",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/caller-memory",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/caller-memory",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1q9s8",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1q9s8",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/caller-memory",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1q9s8",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1q9s8",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/calls",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/calls",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1cljj",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1cljj",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/calls",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1cljj",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1cljj",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/calls",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/calls?limit=50&offset=0",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/calls?limit=50&offset=0",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/calls",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/calls?limit=50&offset=0",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/calls?limit=50&offset=0",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/campaigns",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/campaigns",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=11lwi",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=11lwi",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/campaigns",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=11lwi",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=11lwi",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/campaigns",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/campaigns?limit=50&offset=0",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/campaigns?limit=50&offset=0",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/campaigns",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/campaigns?limit=50&offset=0",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/campaigns?limit=50&offset=0",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/contacts",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/contacts",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=157gx",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=157gx",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/contacts",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=157gx",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=157gx",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/contacts",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/contacts?limit=50&offset=0",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/contacts?limit=50&offset=0",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/dtmf-menus",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/dtmf-menus",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1buxi",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1buxi",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/dtmf-menus",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1buxi",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1buxi",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/dtmf-menus",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/dtmf/menus",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/dtmf/menus",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/dtmf-menus",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/dtmf/menus",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/dtmf/menus",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/enhanced",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/enhanced",
+      "type": "network-error",
+      "message": "HTTP FAILED: https://voice-ai-agent-roan.vercel.app/api/ws",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/ws",
+      "status": 0
+    },
+    {
+      "route": "/dashboard/enhanced",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1r7mo",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1r7mo",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/enhanced",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1r7mo",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1r7mo",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/enhanced",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/sms",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/sms",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/enhanced",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/analytics/stats",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/analytics/stats",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/enhanced",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/sms",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/sms",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/enhanced",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/analytics/stats",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/analytics/stats",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/evaluation",
+      "type": "page-404",
+      "message": "404: "
+    },
+    {
+      "route": "/dashboard/evaluation",
+      "type": "page-500",
+      "message": "500: "
+    },
+    {
+      "route": "/dashboard/evaluation",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1u9bo",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1u9bo",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/evaluation",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1u9bo",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1u9bo",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/flows",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/flows",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1tf7r",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1tf7r",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/flows",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1tf7r",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1tf7r",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/flows",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/flows?tenant_id=default",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/flows?tenant_id=default",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/flows",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/flows?tenant_id=default",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/flows?tenant_id=default",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/handoff",
+      "type": "page-404",
+      "message": "404: "
+    },
+    {
+      "route": "/dashboard/handoff",
+      "type": "page-500",
+      "message": "500: "
+    },
+    {
+      "route": "/dashboard/handoff",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1ru35",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1ru35",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/handoff",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1ru35",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1ru35",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/handoff",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/handoff/config?assistant_id=default",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/handoff/config?assistant_id=default",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/handoff",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/handoff/config?assistant_id=default",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/handoff/config?assistant_id=default",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/interruption-settings",
+      "type": "page-404",
+      "message": "404: "
+    },
+    {
+      "route": "/dashboard/interruption-settings",
+      "type": "page-500",
+      "message": "500: "
+    },
+    {
+      "route": "/dashboard/interruption-settings",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1yx2j",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1yx2j",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/interruption-settings",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1yx2j",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1yx2j",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/interruption-settings",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/analytics/interruption-patterns?assistantId=asst_default&timeRange=7d",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/analytics/interruption-patterns?assistantId=asst_default&timeRange=7d",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/interruption-settings",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/assistants/asst_default/interruption-config",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/assistants/asst_default/interruption-config",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/interruption-settings",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/analytics/interruption-patterns?assistantId=asst_default&timeRange=7d",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/analytics/interruption-patterns?assistantId=asst_default&timeRange=7d",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/interruption-settings",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/assistants/asst_default/interruption-config",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/assistants/asst_default/interruption-config",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/knowledge-base",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/knowledge-base",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=15chc",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=15chc",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/knowledge-base",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=15chc",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=15chc",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/knowledge-base",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/kb/documents",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/kb/documents",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/knowledge-base",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/kb/documents",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/kb/documents",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/language-variants",
+      "type": "page-404",
+      "message": "404: "
+    },
+    {
+      "route": "/dashboard/language-variants",
+      "type": "js-error",
+      "message": "Minified React error #423; visit https://reactjs.org/docs/error-decoder.html?invariant=423 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+    },
+    {
+      "route": "/dashboard/language-variants",
+      "type": "js-error",
+      "message": "Missing credentials. Please pass an `apiKey`, or set the `OPENAI_API_KEY` environment variable."
+    },
+    {
+      "route": "/dashboard/language-variants",
+      "type": "js-error",
+      "message": "Missing credentials. Please pass an `apiKey`, or set the `OPENAI_API_KEY` environment variable."
+    },
+    {
+      "route": "/dashboard/mcp-registry",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/mcp-registry",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=vzaad",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=vzaad",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/mcp-registry",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=vzaad",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=vzaad",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/personas",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/personas",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1w7nd",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=1w7nd",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/personas",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1w7nd",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=1w7nd",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/personas",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/personas",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/personas",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/personas",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/personas",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/personas",
+      "status": 500
+    },
+    {
+      "route": "/dashboard/scheduling",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/scheduling",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/agent/config",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/agent/config",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/scheduling",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=8v2q3",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=8v2q3",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/scheduling",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/bookings?limit=5",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/bookings?limit=5",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/scheduling",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=8v2q3",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=8v2q3",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/scheduling",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/agent/config",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/agent/config",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/scheduling",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/bookings?limit=5",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/bookings?limit=5",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/settings",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/settings",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=bq1jl",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=bq1jl",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/settings",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=bq1jl",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=bq1jl",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/setup",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/setup",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=179v5",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=179v5",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/setup",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=179v5",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=179v5",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/setup",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/agent/config",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/agent/config",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/setup",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/agent/config",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/agent/config",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/tenants",
+      "type": "page-404",
+      "message": "404: Voice AI Agent"
+    },
+    {
+      "route": "/dashboard/tenants",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=nqcpl",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/bookings?_rsc=nqcpl",
+      "status": 404
+    },
+    {
+      "route": "/dashboard/tenants",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=nqcpl",
+      "url": "https://voice-ai-agent-roan.vercel.app/dashboard/analytics?_rsc=nqcpl",
+      "status": 404
+    },
+    {
+      "route": "/localreach",
+      "type": "page-404",
+      "message": "404: LocalReach — Voice AI Outbound Dashboard"
+    },
+    {
+      "route": "/localreach",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/localreach/schedule",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/schedule",
+      "status": 500
+    },
+    {
+      "route": "/localreach",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/localreach/calls?limit=20",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/calls?limit=20",
+      "status": 500
+    },
+    {
+      "route": "/localreach",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/campaigns/localreach?limit=5",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/campaigns/localreach?limit=5",
+      "status": 500
+    },
+    {
+      "route": "/localreach",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/localreach/stats",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/stats",
+      "status": 500
+    },
+    {
+      "route": "/localreach",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/localreach/calls?limit=20",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/calls?limit=20",
+      "status": 500
+    },
+    {
+      "route": "/localreach",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/campaigns/localreach?limit=5",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/campaigns/localreach?limit=5",
+      "status": 500
+    },
+    {
+      "route": "/localreach",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/localreach/schedule",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/schedule",
+      "status": 500
+    },
+    {
+      "route": "/localreach",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/localreach/stats",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/stats",
+      "status": 500
+    },
+    {
+      "route": "/localreach/campaigns",
+      "type": "page-404",
+      "message": "404: LocalReach — Voice AI Outbound Dashboard"
+    },
+    {
+      "route": "/localreach/campaigns",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/campaigns/localreach",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/campaigns/localreach",
+      "status": 500
+    },
+    {
+      "route": "/localreach/campaigns",
+      "type": "network-error",
+      "message": "HTTP 500: https://voice-ai-agent-roan.vercel.app/api/campaigns/localreach",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/campaigns/localreach",
+      "status": 500
+    },
+    {
+      "route": "/localreach/campaigns/new",
+      "type": "page-404",
+      "message": "404: LocalReach — Voice AI Outbound Dashboard"
+    },
+    {
+      "route": "/localreach/campaigns/new",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/offers",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/offers",
+      "status": 404
+    },
+    {
+      "route": "/localreach/campaigns/new",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/offers",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/offers",
+      "status": 404
+    },
+    {
+      "route": "/localreach/compliance",
+      "type": "page-404",
+      "message": "404: LocalReach — Voice AI Outbound Dashboard"
+    },
+    {
+      "route": "/localreach/compliance",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/compliance/stats",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/compliance/stats",
+      "status": 404
+    },
+    {
+      "route": "/localreach/compliance",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/compliance/events?limit=50",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/compliance/events?limit=50",
+      "status": 404
+    },
+    {
+      "route": "/localreach/compliance",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/compliance/stats",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/compliance/stats",
+      "status": 404
+    },
+    {
+      "route": "/localreach/compliance",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/compliance/events?limit=50",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/compliance/events?limit=50",
+      "status": 404
+    },
+    {
+      "route": "/localreach/map",
+      "type": "page-404",
+      "message": "404: LocalReach — Voice AI Outbound Dashboard"
+    },
+    {
+      "route": "/localreach/map",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/map",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/map",
+      "status": 404
+    },
+    {
+      "route": "/localreach/map",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/map",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/map",
+      "status": 404
+    },
+    {
+      "route": "/localreach/offers",
+      "type": "page-404",
+      "message": "404: LocalReach — Voice AI Outbound Dashboard"
+    },
+    {
+      "route": "/localreach/offers",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/offers",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/offers",
+      "status": 404
+    },
+    {
+      "route": "/localreach/offers",
+      "type": "network-error",
+      "message": "HTTP 404: https://voice-ai-agent-roan.vercel.app/api/localreach/offers",
+      "url": "https://voice-ai-agent-roan.vercel.app/api/localreach/offers",
+      "status": 404
+    },
+    {
+      "route": "/api/analytics/conversion",
+      "type": "api-error",
+      "message": "500: {\"error\":\"column voice_agent_calls.contact_id does not exist\"}",
+      "status": 500
+    },
+    {
+      "route": "/api/analytics/bookings",
+      "type": "api-error",
+      "message": "500: {\"error\":\"column voice_agent_bookings.start_time does not exist\"}",
+      "status": 500
+    },
+    {
+      "route": "/api/analytics/campaigns",
+      "type": "api-error",
+      "message": "500: {\"error\":\"Could not find the table 'public.voice_agent_campaigns' in the schema cache\"}",
+      "status": 500
+    },
+    {
+      "route": "/api/contacts",
+      "type": "api-error",
+      "message": "500: {\"error\":\"Could not find the table 'public.voice_agent_contacts' in the schema cache\"}",
+      "status": 500
+    },
+    {
+      "route": "/api/campaigns",
+      "type": "api-error",
+      "message": "500: {\"error\":\"Could not find the table 'public.voice_agent_campaigns' in the schema cache\"}",
+      "status": 500
+    },
+    {
+      "route": "/api/bookings",
+      "type": "api-error",
+      "message": "404 Not Found",
+      "status": 404
+    },
+    {
+      "route": "/api/agent/config",
+      "type": "api-error",
+      "message": "404 Not Found",
+      "status": 404
+    },
+    {
+      "route": "/api/analytics/stats",
+      "type": "api-error",
+      "message": "500: {\"error\":\"column voice_agent_calls.outcome does not exist\"}",
+      "status": 500
+    },
+    {
+      "route": "/api/analytics/trends",
+      "type": "api-error",
+      "message": "500: {\"error\":\"column voice_agent_calls.sentiment does not exist\"}",
+      "status": 500
+    }
+  ]
+}

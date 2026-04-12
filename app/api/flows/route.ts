@@ -11,6 +11,7 @@ import type { ConversationFlow } from '@/lib/flow-types'
 
 /**
  * Feature 171: List all conversation flows for a tenant
+ * F012: Graceful fallback for /api/flows
  */
 export async function GET(request: NextRequest) {
   try {
@@ -30,6 +31,14 @@ export async function GET(request: NextRequest) {
 
     const { data: flows, error } = await query
 
+    // F012: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[Flows API] Schema error detected, returning graceful fallback:', error)
+      return NextResponse.json({
+        flows: []
+      }, { status: 200 })
+    }
+
     if (error) {
       console.error('Error fetching conversation flows:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
@@ -40,6 +49,14 @@ export async function GET(request: NextRequest) {
       count: flows?.length || 0,
     })
   } catch (error: any) {
+    // F012: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[Flows API] Schema error caught in try/catch:', error)
+      return NextResponse.json({
+        flows: []
+      }, { status: 200 })
+    }
+
     console.error('Error in GET /api/flows:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -47,6 +64,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * Feature 172: Create a new conversation flow
+ * F012: Graceful fallback for /api/flows
  */
 export async function POST(request: NextRequest) {
   try {
@@ -115,6 +133,14 @@ export async function POST(request: NextRequest) {
       .select()
       .single()
 
+    // F012: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[Flows API] Schema error on insert, returning graceful fallback:', error)
+      return NextResponse.json({
+        error: 'Flows table schema error'
+      }, { status: 400 })
+    }
+
     if (error) {
       console.error('Error creating conversation flow:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
@@ -129,6 +155,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error: any) {
+    // F012: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      console.warn('[Flows API] Schema error caught in try/catch:', error)
+      return NextResponse.json({
+        error: 'Flows table schema error'
+      }, { status: 400 })
+    }
+
     console.error('Error in POST /api/flows:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

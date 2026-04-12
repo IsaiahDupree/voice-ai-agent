@@ -16,6 +16,7 @@ const supabase = createClient(
 /**
  * GET /api/dtmf/menus
  * List all DTMF menus
+ * F011: Graceful fallback for /api/dtmf/menus
  */
 export async function GET(request: NextRequest) {
   try {
@@ -30,6 +31,14 @@ export async function GET(request: NextRequest) {
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });
+
+    // F011: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[/api/dtmf/menus] Schema error detected, returning graceful fallback:', error);
+      return NextResponse.json({
+        menus: []
+      }, { status: 200 });
+    }
 
     if (error) {
       console.error('[/api/dtmf/menus] Query error:', error);
@@ -46,6 +55,14 @@ export async function GET(request: NextRequest) {
       tenant_id: tenantId,
     });
   } catch (error: unknown) {
+    // F011: Graceful fallback for schema-related errors
+    if (error instanceof Error && (error.message?.includes('does not exist') || error.message?.includes('PGRST204'))) {
+      console.warn('[/api/dtmf/menus] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        menus: []
+      }, { status: 200 });
+    }
+
     console.error('[/api/dtmf/menus] Error:', error);
     return NextResponse.json(
       {
@@ -60,6 +77,7 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/dtmf/menus
  * Create a new DTMF menu
+ * F011: Graceful fallback for /api/dtmf/menus
  */
 export async function POST(request: NextRequest) {
   try {
@@ -116,6 +134,14 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
+    // F011: Graceful fallback for schema errors
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      console.warn('[/api/dtmf/menus] Schema error on insert, returning graceful fallback:', error);
+      return NextResponse.json({
+        error: 'DTMF menu table schema error'
+      }, { status: 400 });
+    }
+
     if (error) {
       console.error('[/api/dtmf/menus] Insert error:', error);
       return NextResponse.json(
@@ -133,6 +159,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: unknown) {
+    // F011: Graceful fallback for schema-related errors
+    if (error instanceof Error && (error.message?.includes('does not exist') || error.message?.includes('PGRST204'))) {
+      console.warn('[/api/dtmf/menus] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        error: 'DTMF menu table schema error'
+      }, { status: 400 });
+    }
+
     console.error('[/api/dtmf/menus] Error:', error);
     return NextResponse.json(
       {

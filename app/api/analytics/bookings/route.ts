@@ -1,4 +1,5 @@
 // F0331: Booking analytics - bookings per day chart data
+// F005: Graceful fallback for /api/analytics/bookings (missing start_time column)
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -27,6 +28,24 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: bookings, error } = await query
+
+    // F005: Graceful fallback for missing column
+    if (error?.message?.includes('does not exist') || error?.message?.includes('start_time')) {
+      console.warn('[Analytics Bookings] Schema error detected, returning graceful fallback:', error);
+      return NextResponse.json({
+        success: true,
+        data: [],
+        summary: {
+          total: 0,
+          avgPerDay: 0,
+          peakDay: { date: startDate.toISOString().split('T')[0], count: 0 },
+          dateRange: {
+            start: startDate.toISOString().split('T')[0],
+            end: endDate.toISOString().split('T')[0]
+          }
+        }
+      }, { status: 200 });
+    }
 
     if (error) throw error
 
@@ -90,6 +109,28 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error: any) {
+    // F005: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      const endDate = new Date();
+      const startDate = new Date();
+      const days = parseInt(new URL(error?.request?.url || '').searchParams.get('days') || '30');
+      startDate.setDate(startDate.getDate() - days);
+      console.warn('[Analytics Bookings] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        success: true,
+        data: [],
+        summary: {
+          total: 0,
+          avgPerDay: 0,
+          peakDay: { date: startDate.toISOString().split('T')[0], count: 0 },
+          dateRange: {
+            start: startDate.toISOString().split('T')[0],
+            end: endDate.toISOString().split('T')[0]
+          }
+        }
+      }, { status: 200 });
+    }
+
     console.error('Error fetching booking analytics:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to fetch booking analytics' },

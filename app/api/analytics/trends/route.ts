@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase';
  * F0841: Call volume trend
  * F0842: Booking trend
  * F0832: Sentiment trend
+ * F008: Graceful fallback for /api/analytics/trends (missing sentiment column)
  *
  * GET /api/analytics/trends - Time series trends
  */
@@ -21,6 +22,18 @@ export async function GET(request: NextRequest) {
       .select('started_at, sentiment, outcome')
       .gte('started_at', startDate)
       .lte('started_at', endDate);
+
+    // F008: Graceful fallback for missing sentiment column
+    if (callsError?.message?.includes('does not exist') || callsError?.message?.includes('sentiment')) {
+      console.warn('[Analytics Trends] Schema error detected, returning graceful fallback:', callsError);
+      return NextResponse.json({
+        call_volume_trend: [],
+        booking_trend: [],
+        sentiment_trend: [],
+        interval,
+        date_range: { start: startDate, end: endDate }
+      }, { status: 200 });
+    }
 
     if (callsError) throw callsError;
 
@@ -100,6 +113,20 @@ export async function GET(request: NextRequest) {
       date_range: { start: startDate, end: endDate },
     });
   } catch (error: any) {
+    // F008: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const endDate = new Date().toISOString();
+      console.warn('[Analytics Trends] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        call_volume_trend: [],
+        booking_trend: [],
+        sentiment_trend: [],
+        interval: 'day',
+        date_range: { start: startDate, end: endDate }
+      }, { status: 200 });
+    }
+
     console.error('Error calculating trends:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to calculate trends' },

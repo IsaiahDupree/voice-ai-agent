@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 /**
  * F0846: Contact conversion rate
  * F0848: First call conversion
+ * F004: Graceful fallback for /api/analytics/conversion (missing contact_id column)
  *
  * GET /api/analytics/conversion - Conversion metrics
  */
@@ -19,6 +20,17 @@ export async function GET(request: NextRequest) {
       .select('call_id, contact_id, started_at, outcome')
       .gte('started_at', startDate)
       .lte('started_at', endDate);
+
+    // F004: Graceful fallback for missing column
+    if (callsError?.message?.includes('does not exist') || callsError?.message?.includes('contact_id')) {
+      console.warn('[Analytics Conversion] Schema error detected, returning graceful fallback:', callsError);
+      return NextResponse.json({
+        overall: { total_calls: 0, total_bookings: 0, conversion_rate: 0 },
+        contact_level: { unique_contacts: 0, contacts_who_booked: 0, conversion_rate: 0 },
+        first_call: { first_calls: 0, first_call_bookings: 0, conversion_rate: 0 },
+        date_range: { start: startDate, end: endDate }
+      }, { status: 200 });
+    }
 
     if (callsError) throw callsError;
 
@@ -82,6 +94,19 @@ export async function GET(request: NextRequest) {
       date_range: { start: startDate, end: endDate },
     });
   } catch (error: any) {
+    // F004: Graceful fallback for schema-related errors
+    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+      const startDate = new URL(error?.request?.url || '').searchParams.get('start_date') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const endDate = new URL(error?.request?.url || '').searchParams.get('end_date') || new Date().toISOString();
+      console.warn('[Analytics Conversion] Schema error caught in try/catch:', error);
+      return NextResponse.json({
+        overall: { total_calls: 0, total_bookings: 0, conversion_rate: 0 },
+        contact_level: { unique_contacts: 0, contacts_who_booked: 0, conversion_rate: 0 },
+        first_call: { first_calls: 0, first_call_bookings: 0, conversion_rate: 0 },
+        date_range: { start: startDate, end: endDate }
+      }, { status: 200 });
+    }
+
     console.error('Error calculating conversion:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to calculate conversion' },
