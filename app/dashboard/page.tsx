@@ -5,6 +5,7 @@ import { CampaignsWidget } from './components/campaigns-widget';
 import { RecentCallsFeed } from './components/recent-calls-feed';
 import { BookingsWidget } from './components/bookings-widget';
 import { PerformanceWidget } from './components/performance-widget';
+import { CallsTrendChart } from './components/calls-trend-chart';
 
 export default function DashboardPage() {
   return (
@@ -39,6 +40,11 @@ export default function DashboardPage() {
         <div>
           <PerformanceWidget />
         </div>
+      </div>
+
+      {/* Analytics Chart */}
+      <div className="mt-8">
+        <CallsTrendChart />
       </div>
     </div>
   );

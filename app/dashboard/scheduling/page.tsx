@@ -40,6 +40,14 @@ interface HealthInfo {
   timestamp: string
 }
 
+interface Booking {
+  id: string
+  contact_name: string
+  email: string
+  scheduled_time: string
+  status: string
+}
+
 export default function SchedulingPage() {
   const [providersData, setProvidersData] = useState<{
     currentProvider: ProviderInfo
@@ -49,10 +57,15 @@ export default function SchedulingPage() {
   const [healthData, setHealthData] = useState<HealthInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false)
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [googleCalendarName, setGoogleCalendarName] = useState<string | null>(null)
 
   useEffect(() => {
     fetchProviderInfo()
     fetchHealthStatus()
+    checkGoogleCalendarStatus()
+    fetchUpcomingBookings()
   }, [])
 
   async function fetchProviderInfo() {
@@ -83,6 +96,37 @@ export default function SchedulingPage() {
     } catch (err: any) {
       console.error('Error fetching health status:', err)
     }
+  }
+
+  async function checkGoogleCalendarStatus() {
+    try {
+      const response = await fetch('/api/agent/config')
+      if (response.ok) {
+        const config = await response.json()
+        if (config.google_calendar_token) {
+          setGoogleCalendarConnected(true)
+          setGoogleCalendarName(config.google_calendar_name || 'Google Calendar')
+        }
+      }
+    } catch (err: any) {
+      console.error('Error checking Google Calendar status:', err)
+    }
+  }
+
+  async function fetchUpcomingBookings() {
+    try {
+      const response = await fetch('/api/bookings?limit=5')
+      if (response.ok) {
+        const data = await response.json()
+        setBookings(Array.isArray(data) ? data : data.bookings || [])
+      }
+    } catch (err: any) {
+      console.error('Error fetching bookings:', err)
+    }
+  }
+
+  function handleGoogleCalendarConnect() {
+    window.location.href = '/api/auth/google-calendar'
   }
 
   if (loading) {
@@ -203,6 +247,65 @@ export default function SchedulingPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Google Calendar Section */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Google Calendar Integration</CardTitle>
+          <CardDescription>Connect your Google Calendar for automatic booking scheduling</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {googleCalendarConnected ? (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="font-semibold">Connected Calendar</p>
+                  <p className="text-sm text-gray-600">{googleCalendarName}</p>
+                </div>
+                <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                  Connected
+                </span>
+              </div>
+
+              {/* Upcoming Bookings */}
+              {bookings.length > 0 ? (
+                <div className="mt-6">
+                  <h4 className="font-semibold mb-3">Upcoming Bookings</h4>
+                  <div className="space-y-2">
+                    {bookings.map((booking) => (
+                      <div
+                        key={booking.id}
+                        className="p-3 border rounded-lg bg-gray-50 flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-medium text-sm">{booking.contact_name}</p>
+                          <p className="text-xs text-gray-600">
+                            {new Date(booking.scheduled_time).toLocaleString()}
+                          </p>
+                        </div>
+                        <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">
+                          {booking.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">No upcoming bookings scheduled.</p>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600 mb-4">
+                Connect your Google Calendar to automatically sync bookings from your agent calls.
+              </p>
+              <Button onClick={handleGoogleCalendarConnect} className="bg-blue-600 hover:bg-blue-700">
+                📅 Connect Google Calendar
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Available Providers */}
       <Card>

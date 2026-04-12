@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Phone, PhoneOutgoing, PhoneIncoming, Clock } from 'lucide-react';
+import { Phone, PhoneOutgoing, PhoneIncoming, Clock, CheckCircle } from 'lucide-react';
 
 interface CallStats {
   inbound_count: number;
   outbound_count: number;
   total_duration: number;
   answer_rate: number;
+  goal_achieved_count?: number;
   error?: string;
 }
 
@@ -77,10 +78,10 @@ export function StatsBar() {
       color: 'text-purple-600',
     },
     {
-      label: 'Total Duration',
-      value: `${Math.floor((stats?.total_duration || 0) / 60)}m`,
-      icon: Clock,
-      color: 'text-orange-600',
+      label: 'Successful',
+      value: stats?.goal_achieved_count || 0,
+      icon: CheckCircle,
+      color: 'text-emerald-600',
     },
   ];
 
