@@ -4,12 +4,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 interface RouteParams {
-  params: { id: string }
+  params: Promise<{ id: string }>;
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
+    const { id } = await params;
+
   try {
-    const contactId = params.id
+    const contactId = id
     const { stage } = await request.json()
 
     if (!contactId) {

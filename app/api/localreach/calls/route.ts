@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1)
 
     // F017: Graceful fallback for schema errors
-    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
       console.warn('[LocalReach Calls API] Schema error detected, returning graceful fallback:', error)
       return NextResponse.json({ calls: [] }, { status: 200 })
     }
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(transformed)
   } catch (error: any) {
     // F017: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.message?.includes('column')) {
       console.warn('[LocalReach Calls API] Schema error caught in try/catch:', error)
       return NextResponse.json({ calls: [] }, { status: 200 })
     }

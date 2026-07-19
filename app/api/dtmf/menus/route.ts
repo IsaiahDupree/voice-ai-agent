@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query.order('created_at', { ascending: false });
 
     // F011: Graceful fallback for schema errors
-    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
       console.warn('[/api/dtmf/menus] Schema error detected, returning graceful fallback:', error);
       return NextResponse.json({
         menus: []
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     // F011: Graceful fallback for schema errors
-    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
       console.warn('[/api/dtmf/menus] Schema error on insert, returning graceful fallback:', error);
       return NextResponse.json({
         error: 'DTMF menu table schema error'

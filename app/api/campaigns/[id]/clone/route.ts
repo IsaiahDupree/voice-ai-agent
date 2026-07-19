@@ -9,10 +9,12 @@ import { supabaseAdmin } from '@/lib/supabase';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const sourceCampaignId = params.id;
+    const sourceCampaignId = id;
     const body = await request.json();
     const { name, include_contacts } = body;
 

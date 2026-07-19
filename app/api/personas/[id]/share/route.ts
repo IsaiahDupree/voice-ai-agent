@@ -13,8 +13,10 @@ interface ShareRequest {
 // POST /api/personas/:id/share - Generate share link or share with team
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body: ShareRequest = await request.json()
     const { searchParams } = new URL(request.url)
@@ -24,7 +26,7 @@ export async function POST(
     let query = supabaseAdmin
       .from('personas')
       .select('id, name, org_id')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)
@@ -60,8 +62,10 @@ export async function POST(
 // GET /api/personas/:id/share - Get share links for a persona
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -69,7 +73,7 @@ export async function GET(
     let query = supabaseAdmin
       .from('personas')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)
@@ -82,7 +86,7 @@ export async function GET(
     }
 
     return NextResponse.json({
-      persona_id: params.id,
+      persona_id: id,
       share_links: [],
       message: 'No active share links',
     })
@@ -95,8 +99,10 @@ export async function GET(
 // DELETE /api/personas/:id/share/:token - Revoke a share link
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const token = searchParams.get('token')
@@ -109,7 +115,7 @@ export async function DELETE(
     let query = supabaseAdmin
       .from('personas')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)

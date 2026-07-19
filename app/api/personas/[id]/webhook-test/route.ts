@@ -4,12 +4,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { testWebhook } from '@/lib/persona-builder'
 
 interface RouteParams {
-  params: { id: string }
+  params: Promise<{ id: string }>;
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
+    const { id } = await params;
+
   try {
-    const personaId = params.id
+    const personaId = id
     const { webhookUrl, secret } = await request.json()
 
     if (!personaId) {

@@ -10,10 +10,12 @@ interface ComplianceResult {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { phone: string } }
+  { params }: { params: Promise<{ phone: string }> }
 ) {
+    const { phone: phone_param } = await params;
+
   try {
-    const rawPhone = decodeURIComponent(params.phone)
+    const rawPhone = decodeURIComponent(phone_param)
     const phone = formatE164(rawPhone)
 
     if (!validatePhoneNumber(phone)) {

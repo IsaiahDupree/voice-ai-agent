@@ -6,12 +6,14 @@ import { updateTemplate, getTemplate, validateTemplate, extractVariables } from 
 import { supabaseAdmin } from '@/lib/supabase'
 
 interface RouteParams {
-  params: { id: string }
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
+    const { id } = await params;
+
   try {
-    const templateId = params.id
+    const templateId = id
 
     if (!templateId) {
       return NextResponse.json(
@@ -40,8 +42,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+    const { id } = await params;
+
   try {
-    const templateId = params.id
+    const templateId = id
     const { name, description, category, content } = await request.json()
 
     if (!templateId) {
@@ -96,8 +100,10 @@ export async function DELETE(
   request: NextRequest,
   { params }: RouteParams
 ) {
+    const { id } = await params;
+
   try {
-    const templateId = params.id
+    const templateId = id
 
     if (!templateId) {
       return NextResponse.json(

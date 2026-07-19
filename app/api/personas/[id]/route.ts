@@ -7,8 +7,10 @@ import { vapiClient } from '@/lib/vapi'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id') // F0813: Organization scoping
@@ -16,7 +18,7 @@ export async function GET(
     let query = supabaseAdmin
       .from('personas')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
 
     // F0813: Verify org ownership - blocks cross-org access
     if (orgId) {
@@ -42,8 +44,10 @@ export async function GET(
 // F0940: Update persona
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const {
@@ -60,7 +64,7 @@ export async function PUT(
     let query = supabaseAdmin
       .from('personas')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
 
     // F0813: Verify org ownership before update
     if (org_id) {
@@ -110,7 +114,7 @@ export async function PUT(
         active,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -127,8 +131,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id') // F0813: Organization scoping
@@ -137,7 +143,7 @@ export async function DELETE(
     let query = supabaseAdmin
       .from('personas')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
 
     // F0813: Verify org ownership before delete
     if (orgId) {
@@ -163,7 +169,7 @@ export async function DELETE(
     let deleteQuery = supabaseAdmin
       .from('personas')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     // F0813: Ensure org scoping on delete
     if (orgId) {

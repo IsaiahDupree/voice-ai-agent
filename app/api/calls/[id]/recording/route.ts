@@ -13,12 +13,14 @@ import { getOrCreateCorrelationId, attachCorrelationId } from '@/lib/correlation
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   const correlationId = getOrCreateCorrelationId(request.headers)
 
   try {
-    const call = await getCall(params.id)
+    const call = await getCall(id)
 
     if (!call) {
       const response = NextResponse.json(
@@ -42,7 +44,7 @@ export async function GET(
         {
           error: 'Recording unavailable',
           message: reason,
-          call_id: params.id,
+          call_id: id,
           status: 'unavailable',
           correlation_id: correlationId,
         },

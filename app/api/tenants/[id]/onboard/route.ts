@@ -28,10 +28,10 @@ interface OnboardingRequest {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const body: OnboardingRequest = await request.json()
 
     // Step 1: Verify tenant exists

@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     // F004: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.message?.includes('column')) {
       const startDate = new URL(error?.request?.url || '').searchParams.get('start_date') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const endDate = new URL(error?.request?.url || '').searchParams.get('end_date') || new Date().toISOString();
       console.warn('[Analytics Conversion] Schema error caught in try/catch:', error);

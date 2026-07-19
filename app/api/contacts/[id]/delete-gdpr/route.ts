@@ -4,10 +4,12 @@ import { deleteContactData } from '@/lib/gdpr-compliance'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const contactId = params.id
+    const contactId = id
     const body = await request.json()
     const { reason } = body
 

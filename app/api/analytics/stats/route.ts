@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     // F007: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.message?.includes('column')) {
       const startDate = new Date();
       const endDate = new Date();
       startDate.setDate(startDate.getDate() - 30);

@@ -6,10 +6,10 @@ import { setMaxRingingDuration, getRingingConfig } from '@/lib/ringing-config'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: assistantId } = params
+    const { id: assistantId } = await params
     const config = await getRingingConfig(assistantId)
 
     if (!config) {
@@ -30,10 +30,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: assistantId } = params
+    const { id: assistantId } = await params
     const body = await request.json()
     const { max_ring_seconds, voicemail_message } = body
 

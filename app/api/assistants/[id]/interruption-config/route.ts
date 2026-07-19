@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
 interface RouteContext {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 /**
@@ -19,7 +19,7 @@ export async function GET(
   request: NextRequest,
   context: RouteContext
 ) {
-  const assistantId = context.params.id;
+  const { id: assistantId } = await context.params;
 
   try {
     const { data, error } = await supabaseAdmin
@@ -29,7 +29,7 @@ export async function GET(
       .single();
 
     // F010: Graceful fallback for schema errors
-    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
       console.warn('[GET Interruption Config] Schema error detected, returning graceful fallback:', error);
       return NextResponse.json({
         assistant_id: assistantId,
@@ -69,7 +69,7 @@ export async function GET(
     });
   } catch (error: any) {
     // F010: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.code === 'PGRST204') {
       console.warn('[GET Interruption Config] Schema error caught in try/catch:', error);
       return NextResponse.json({
         assistant_id: assistantId,
@@ -98,7 +98,7 @@ export async function PUT(
   request: NextRequest,
   context: RouteContext
 ) {
-  const assistantId = context.params.id;
+  const { id: assistantId } = await context.params;
 
   try {
     const body = await request.json();
@@ -160,7 +160,7 @@ export async function PUT(
     });
   } catch (error: any) {
     // F010: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.code === 'PGRST204') {
       console.warn('[PUT Interruption Config] Schema error caught:', error);
       return NextResponse.json({
         success: false,
@@ -186,7 +186,7 @@ export async function DELETE(
   request: NextRequest,
   context: RouteContext
 ) {
-  const assistantId = context.params.id;
+  const { id: assistantId } = await context.params;
 
   try {
     const { error } = await supabaseAdmin
@@ -205,7 +205,7 @@ export async function DELETE(
     });
   } catch (error: any) {
     // F010: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.code === 'PGRST204') {
       console.warn('[DELETE Interruption Config] Schema error caught:', error);
       return NextResponse.json({
         success: true,

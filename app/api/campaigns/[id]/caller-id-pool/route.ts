@@ -9,13 +9,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/campaigns/:id/caller-id-pool
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data: campaign, error } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('id, name, metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -27,7 +29,7 @@ export async function GET(
     };
 
     return NextResponse.json({
-      campaign_id: params.id,
+      campaign_id: id,
       caller_id_config: callerIdConfig,
     });
   } catch (error: any) {
@@ -42,8 +44,10 @@ export async function GET(
 // PUT /api/campaigns/:id/caller-id-pool
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { enabled, pool, strategy } = body;
@@ -78,7 +82,7 @@ export async function PUT(
     const { data: campaign } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     // Update with caller ID rotation config
@@ -100,7 +104,7 @@ export async function PUT(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -108,7 +112,7 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      campaign_id: params.id,
+      campaign_id: id,
       caller_id_config: data.metadata.caller_id_rotation,
     });
   } catch (error: any) {

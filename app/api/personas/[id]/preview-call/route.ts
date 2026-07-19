@@ -11,8 +11,10 @@ interface PreviewCallRequest {
 // POST /api/personas/:id/preview-call - Initiate a preview call
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body: PreviewCallRequest = await request.json()
     const { searchParams } = new URL(request.url)
@@ -32,7 +34,7 @@ export async function POST(
       .select(
         'id, name, voice_id, system_prompt, first_message, vapi_assistant_id, org_id'
       )
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)
@@ -48,7 +50,7 @@ export async function POST(
     const { data: testCall, error: insertError } = await supabaseAdmin
       .from('persona_test_calls')
       .insert({
-        persona_id: params.id,
+        persona_id: id,
         from_number: body.phone_number,
         status: 'pending',
       })
@@ -70,7 +72,7 @@ export async function POST(
       next_steps: {
         description: 'Call will be placed to the provided number',
         estimated_wait: '30-60 seconds',
-        check_status_url: `/api/personas/${params.id}/test-calls/${testCall.id}`,
+        check_status_url: `/api/personas/${id}/test-calls/${testCall.id}`,
       },
     }, { status: 201 })
   } catch (error: any) {

@@ -8,10 +8,12 @@ import { getCallerProfile } from '@/lib/caller-memory';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { phone: string } }
+  { params }: { params: Promise<{ phone: string }> }
 ) {
+    const { phone } = await params;
+
   try {
-    const phoneNumber = decodeURIComponent(params.phone);
+    const phoneNumber = decodeURIComponent(phone);
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenantId') || 'default';
 

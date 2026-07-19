@@ -5,8 +5,10 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const { labels } = body
@@ -22,7 +24,7 @@ export async function POST(
     const { data: existingCall } = await supabaseAdmin
       .from('voice_agent_calls')
       .select('labels')
-      .eq('call_id', params.id)
+      .eq('call_id', id)
       .single()
 
     const existingLabels = existingCall?.labels || []
@@ -34,7 +36,7 @@ export async function POST(
         labels: mergedLabels,
         updated_at: new Date().toISOString(),
       })
-      .eq('call_id', params.id)
+      .eq('call_id', id)
       .select()
       .single()
 
@@ -42,7 +44,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      call_id: params.id,
+      call_id: id,
       labels: data.labels,
     })
   } catch (error: any) {
@@ -57,8 +59,10 @@ export async function POST(
 // Remove labels
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const labelsToRemove = searchParams.get('labels')?.split(',') || []
@@ -74,7 +78,7 @@ export async function DELETE(
     const { data: existingCall } = await supabaseAdmin
       .from('voice_agent_calls')
       .select('labels')
-      .eq('call_id', params.id)
+      .eq('call_id', id)
       .single()
 
     const existingLabels = existingCall?.labels || []
@@ -86,7 +90,7 @@ export async function DELETE(
         labels: updatedLabels,
         updated_at: new Date().toISOString(),
       })
-      .eq('call_id', params.id)
+      .eq('call_id', id)
       .select()
       .single()
 
@@ -94,7 +98,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      call_id: params.id,
+      call_id: id,
       labels: data.labels,
     })
   } catch (error: any) {

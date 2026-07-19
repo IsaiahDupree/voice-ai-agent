@@ -12,10 +12,10 @@ import { getCachedMCPTools } from '@/lib/mcp-client'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { server: string } }
+  { params }: { params: Promise<{ server: string }> }
 ) {
   try {
-    const { server: serverName } = params
+    const { server: serverName } = await params
     const { searchParams } = new URL(request.url)
     const tenantId = searchParams.get('tenant_id') || 'default'
     const refresh = searchParams.get('refresh') === 'true' // Force refresh cache

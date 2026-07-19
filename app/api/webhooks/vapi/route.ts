@@ -563,7 +563,7 @@ async function handleStatusUpdate(event: Extract<VapiEvent, { type: 'status-upda
 // F0273: Check calendar availability using calcomClient
 async function checkCalendar(params: { date: string; eventTypeId?: string }) {
   try {
-    const { date, eventTypeId } = params
+    const { date, eventTypeId } = await params
     const eventType = eventTypeId || process.env.CALCOM_EVENT_TYPE_ID!
 
     // F0275: Get slots as ISO8601 datetime strings
@@ -595,7 +595,7 @@ async function bookAppointment(params: {
   callId?: string
 }) {
   try {
-    const { name, email, phone, date, time, eventTypeId, callId } = params
+    const { name, email, phone, date, time, eventTypeId, callId } = await params
     const eventType = eventTypeId || process.env.CALCOM_EVENT_TYPE_ID!
 
     // F0301: Booking in call - must complete in < 5s
@@ -661,7 +661,7 @@ async function bookAppointment(params: {
 }
 
 async function lookupContact(params: { phone: string }) {
-  const { phone } = params
+  const { phone } = await params
 
   const { data, error } = await supabaseAdmin
     .from('voice_agent_contacts')
@@ -687,7 +687,7 @@ async function lookupContact(params: { phone: string }) {
 // F0367-F0374: sendSMS tool with DNC check and logging
 async function sendSMS(params: { to: string; message: string; templateType?: string; vars?: any }) {
   try {
-    const { to, message, templateType, vars } = params
+    const { to, message, templateType, vars } = await params
 
     // F0370: Check DNC list before sending
     const isDNC = await checkDNC(to)
@@ -770,7 +770,7 @@ async function sendSMS(params: { to: string; message: string; templateType?: str
 }
 
 async function transferCall(params: { phoneNumber: string }) {
-  const { phoneNumber } = params
+  const { phoneNumber } = await params
   return {
     success: true,
     action: 'transfer',
@@ -781,7 +781,7 @@ async function transferCall(params: { phoneNumber: string }) {
 // F0195: Self-service DNC opt-out function
 async function optOutDNC(params: { phone: string; reason?: string }) {
   try {
-    const { phone, reason } = params
+    const { phone, reason } = await params
 
     const success = await addToDNC(phone, 'self-service', reason || 'Caller requested removal during call')
 

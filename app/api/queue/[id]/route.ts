@@ -18,8 +18,10 @@ interface QueueItem {
 // GET /api/queue/:id - Get a queue item
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -27,7 +29,7 @@ export async function GET(
     let query = supabaseAdmin
       .from('call_queue')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)
@@ -49,8 +51,10 @@ export async function GET(
 // DELETE /api/queue/:id - Delete a queue item
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -59,7 +63,7 @@ export async function DELETE(
     let verifyQuery = supabaseAdmin
       .from('call_queue')
       .select('id, status')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -83,7 +87,7 @@ export async function DELETE(
     const { error: deleteError } = await supabaseAdmin
       .from('call_queue')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (deleteError) {
       return NextResponse.json(
@@ -94,7 +98,7 @@ export async function DELETE(
 
     return NextResponse.json({
       message: 'Queue item deleted',
-      deleted_id: params.id,
+      deleted_id: id,
     })
   } catch (error: any) {
     console.error('Error deleting queue item:', error)

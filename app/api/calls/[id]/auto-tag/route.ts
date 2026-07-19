@@ -10,10 +10,12 @@ import { analyzeTranscriptForTags, extractEarlyTranscript } from '@/lib/auto-tag
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const callId = params.id;
+    const callId = id;
 
     // Get call transcript messages
     const { data: transcript, error: transcriptError } = await supabaseAdmin
@@ -95,10 +97,12 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const callId = params.id;
+    const callId = id;
 
     // Get call transcript messages
     const { data: transcript, error: transcriptError } = await supabaseAdmin

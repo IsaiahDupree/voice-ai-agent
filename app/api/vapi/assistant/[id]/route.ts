@@ -3,10 +3,12 @@ import { getAssistant, updateAssistant, deleteAssistant, VapiAssistant } from '@
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const assistant = await getAssistant(params.id)
+    const assistant = await getAssistant(id)
     return NextResponse.json(assistant)
   } catch (error: any) {
     console.error('Error getting assistant:', error)
@@ -19,11 +21,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body: Partial<VapiAssistant> = await request.json()
-    const assistant = await updateAssistant(params.id, body)
+    const assistant = await updateAssistant(id, body)
 
     return NextResponse.json(assistant)
   } catch (error: any) {
@@ -37,10 +41,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    await deleteAssistant(params.id)
+    await deleteAssistant(id)
     return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('Error deleting assistant:', error)

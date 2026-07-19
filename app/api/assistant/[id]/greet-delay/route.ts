@@ -9,13 +9,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/assistant/:id/greet-delay
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data: persona, error } = await supabaseAdmin
       .from('personas')
       .select('id, name, metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -23,7 +25,7 @@ export async function GET(
     const greetDelayMs = persona.metadata?.greet_delay_ms || 0;
 
     return NextResponse.json({
-      assistant_id: params.id,
+      assistant_id: id,
       assistant_name: persona.name,
       greet_delay_ms: greetDelayMs,
       greet_delay_seconds: greetDelayMs / 1000,
@@ -40,8 +42,10 @@ export async function GET(
 // PUT /api/assistant/:id/greet-delay
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { delay_seconds, delay_ms } = body;
@@ -72,7 +76,7 @@ export async function PUT(
     const { data: persona } = await supabaseAdmin
       .from('personas')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     // Update greet delay
@@ -85,7 +89,7 @@ export async function PUT(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -93,7 +97,7 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      assistant_id: params.id,
+      assistant_id: id,
       greet_delay_ms: delayMs,
       greet_delay_seconds: delayMs / 1000,
     });

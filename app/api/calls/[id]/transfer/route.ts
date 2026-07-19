@@ -4,12 +4,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { transferCallWithType, type TransferType } from '@/lib/call-transfer-enhanced'
 
 interface RouteParams {
-  params: { id: string }
+  params: Promise<{ id: string }>;
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
+    const { id } = await params;
+
   try {
-    const callId = params.id
+    const callId = id
     const { to_phone, type = 'warm', announcement, context } = await request.json()
 
     if (!callId) {

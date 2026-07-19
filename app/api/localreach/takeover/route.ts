@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { VapiClient } from '@vapi-ai/server-sdk'
 
 const vapi = new VapiClient({
-  token: process.env.VAPI_API_KEY,
+  token: process.env.VAPI_API_KEY || '',
 })
 
 export async function POST(request: NextRequest) {

@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     )
   } catch (error: any) {
     // F002: Graceful fallback for schema errors
-    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.message?.includes('column')) {
       console.warn('[Campaigns API] Schema error caught:', error)
       return NextResponse.json({
         success: false,
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     // F002: Graceful fallback for schema errors
-    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
       console.warn('[Campaigns API] Schema error detected, returning graceful fallback:', error)
       return NextResponse.json({
         success: true,
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     // F002: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.message?.includes('column')) {
       console.warn('[Campaigns API] Schema error caught in try/catch:', error)
       return NextResponse.json({
         success: true,

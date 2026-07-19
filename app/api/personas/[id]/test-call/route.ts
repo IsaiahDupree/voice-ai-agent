@@ -4,12 +4,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createPersonaTestCall, getPersonaTestCall } from '@/lib/persona-builder'
 
 interface RouteParams {
-  params: { id: string }
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
+    const { id } = await params;
+
   try {
-    const personaId = params.id
+    const personaId = id
     const testCallId = request.nextUrl.searchParams.get('testCallId')
 
     if (!personaId) {
@@ -53,8 +55,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
+    const { id } = await params;
+
   try {
-    const personaId = params.id
+    const personaId = id
     const { fromNumber } = await request.json()
 
     if (!personaId) {

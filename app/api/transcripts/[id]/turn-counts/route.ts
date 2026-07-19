@@ -72,14 +72,16 @@ function countTurns(transcript: any): {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     // Fetch transcript
     const { data: transcript, error } = await supabaseAdmin
       .from('voice_agent_transcripts')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error || !transcript) {

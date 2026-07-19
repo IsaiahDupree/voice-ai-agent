@@ -15,8 +15,10 @@ interface ActivationEntry {
 // GET /api/personas/:id/activation-history - Get activation/deactivation history
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -24,7 +26,7 @@ export async function GET(
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Verify persona exists and belongs to org
-    let verifyQuery = supabaseAdmin.from('personas').select('id, active').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('id, active').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -43,7 +45,7 @@ export async function GET(
         'id, activated_at, deactivated_at, activated_by, deactivated_by, created_at',
         { count: 'exact' }
       )
-      .eq('persona_id', params.id)
+      .eq('persona_id', id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -70,14 +72,16 @@ export async function GET(
 // POST /api/personas/:id/activation-history - Log activation change (internal)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { activated_at, deactivated_at, activated_by, deactivated_by } = await request.json()
     const orgId = new URL(request.url).searchParams.get('org_id')
 
     // Verify persona exists and belongs to org
-    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -93,7 +97,7 @@ export async function POST(
     const { data: entry, error: insertError } = await supabaseAdmin
       .from('persona_activation_history')
       .insert({
-        persona_id: params.id,
+        persona_id: id,
         activated_at,
         deactivated_at,
         activated_by,

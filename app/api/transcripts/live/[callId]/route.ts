@@ -8,9 +8,11 @@ import { supabase } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { callId: string } }
+  { params }: { params: Promise<{ callId: string }> }
 ) {
-  const callId = params.callId;
+    const { callId } = await params;
+
+
   const { searchParams } = new URL(request.url);
   const tenantId = searchParams.get('tenantId') || 'default';
 

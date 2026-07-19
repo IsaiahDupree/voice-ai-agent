@@ -5,22 +5,24 @@ import { getCampaignQualityReport } from '@/lib/call-quality-monitoring'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const startDate = searchParams.get('start_date')
     const endDate = searchParams.get('end_date')
 
     const report = await getCampaignQualityReport(
-      parseInt(params.id),
+      parseInt(id),
       startDate || undefined,
       endDate || undefined
     )
 
     return NextResponse.json({
       success: true,
-      campaign_id: params.id,
+      campaign_id: id,
       report,
     })
   } catch (error: any) {

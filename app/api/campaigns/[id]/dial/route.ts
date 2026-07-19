@@ -5,8 +5,10 @@ import { processCampaignBatch } from '@/lib/campaign-dialer'
 // F0139: Uses call whisper automatically for each contact
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const {
@@ -16,7 +18,7 @@ export async function POST(
     } = body
 
     const results = await processCampaignBatch({
-      campaignId: params.id,
+      campaignId: id,
       maxConcurrentCalls,
       callDelay,
       respectBusinessHours,

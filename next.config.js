@@ -7,6 +7,7 @@ const nextConfig = {
       bodySizeLimit: '2mb',
       allowedOrigins: ['localhost:3000'],
     },
+    serverComponentsExternalPackages: ['tiktoken'],
   },
   // API routes max duration (30 seconds for all API routes)
   // This is enforced at the Edge/Vercel platform level

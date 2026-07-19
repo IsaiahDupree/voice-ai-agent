@@ -5,8 +5,10 @@ import { supabaseAdmin } from '@/lib/supabase'
 // F1009: GET /api/personas/:id/metrics - Returns performance metrics for persona
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -17,7 +19,7 @@ export async function GET(
     let personaQuery = supabaseAdmin
       .from('personas')
       .select('id, name, vapi_assistant_id')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       personaQuery = personaQuery.eq('org_id', orgId)

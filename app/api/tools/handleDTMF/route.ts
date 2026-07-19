@@ -37,8 +37,9 @@ export async function POST(request: NextRequest) {
   try {
     const body: HandleDTMFRequest = await request.json();
     const params = body.message?.functionCall?.parameters;
+    const { menu_id, keypress, session_state, tenant_id = 'default' } = params || {};
 
-    if (!params || !params.menu_id || !params.keypress) {
+    if (!params || !menu_id || !keypress) {
       return NextResponse.json({
         results: [
           {
@@ -48,8 +49,6 @@ export async function POST(request: NextRequest) {
         ],
       });
     }
-
-    const { menu_id, keypress, session_state, tenant_id = 'default' } = params;
 
     // Load menu configuration from database
     const { data: menu, error: menuError } = await supabase

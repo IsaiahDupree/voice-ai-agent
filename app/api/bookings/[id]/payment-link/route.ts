@@ -11,8 +11,10 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const {
@@ -34,7 +36,7 @@ export async function POST(
           phone_number
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (bookingError || !booking) {
@@ -121,14 +123,16 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     // Fetch booking payment info
     const { data: payments, error } = await supabaseAdmin
       .from('booking_payments')
       .select('*')
-      .eq('booking_id', params.id)
+      .eq('booking_id', id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -137,7 +141,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      booking_id: params.id,
+      booking_id: id,
       payment: latestPayment || null,
       has_payment: !!latestPayment,
       all_payments: payments || [],

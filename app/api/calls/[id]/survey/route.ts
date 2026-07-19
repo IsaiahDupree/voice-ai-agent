@@ -55,11 +55,13 @@ const DEFAULT_SURVEY_QUESTIONS: SurveyQuestion[] = [
 // GET /api/calls/:id/survey - Get survey for a call
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     return NextResponse.json({
-      call_id: params.id,
+      call_id: id,
       questions: DEFAULT_SURVEY_QUESTIONS,
       format: 'ivr',
       estimated_duration_seconds: 60,
@@ -73,8 +75,10 @@ export async function GET(
 // POST /api/calls/:id/survey - Submit survey response
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body: SurveyResponse = await request.json()
 
@@ -89,7 +93,7 @@ export async function POST(
     // Store survey response (would insert into call_surveys table)
     const surveyRecord = {
       id: `survey-${Date.now()}`,
-      call_id: params.id,
+      call_id: id,
       rating: body.rating,
       comment: body.comment,
       transferred: body.transferred,

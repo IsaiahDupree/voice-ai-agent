@@ -19,8 +19,10 @@ function generateConfirmationCode(): string {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { regenerate = false } = body;
@@ -29,7 +31,7 @@ export async function POST(
     const { data: booking, error: bookingError } = await supabaseAdmin
       .from('bookings')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (bookingError || !booking) {
@@ -61,7 +63,7 @@ export async function POST(
         confirmation_code: confirmationCode,
         confirmation_code_generated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -89,8 +91,10 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
@@ -106,7 +110,7 @@ export async function GET(
     const { data: booking, error } = await supabaseAdmin
       .from('bookings')
       .select('id, confirmation_code, status, start_time, end_time')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error || !booking) {

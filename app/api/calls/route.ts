@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1)
 
     // If schema error, gracefully return empty data
-    if (error?.code === 'PGRST204' || error?.message?.includes('column') || error?.message?.includes('does not exist')) {
+    if (error?.code === 'PGRST204' || error?.message?.includes('column') || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
       console.warn('[Calls API] Schema error detected, returning graceful fallback:', error)
       return NextResponse.json({
         calls: [],
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     // Graceful fallback for any schema-related errors
-    if (error?.message?.includes('column') || error?.message?.includes('does not exist')) {
+    if (error?.message?.includes('column') || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
       console.warn('[Calls API] Schema error caught in try/catch:', error)
       return NextResponse.json({
         calls: [],

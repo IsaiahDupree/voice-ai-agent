@@ -9,8 +9,10 @@ import { logCampaignAction } from '@/lib/campaign-audit'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     // F0253: RBAC check - require admin role
     const user = await getUserFromRequest(request)
@@ -21,7 +23,7 @@ export async function POST(
     const { data: campaign, error: fetchError } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (fetchError) throw fetchError
@@ -37,7 +39,7 @@ export async function POST(
     const { count } = await supabaseAdmin
       .from('voice_agent_campaign_contacts')
       .select('*', { count: 'exact', head: true })
-      .eq('campaign_id', params.id)
+      .eq('campaign_id', id)
       .eq('status', 'pending')
 
     if (!count || count === 0) {
@@ -58,7 +60,7 @@ export async function POST(
           started_at: new Date().toISOString(),
         },
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -66,7 +68,7 @@ export async function POST(
 
     // F0254: Log campaign start action to audit log
     await logCampaignAction({
-      campaign_id: parseInt(params.id),
+      campaign_id: parseInt(id),
       action: 'started',
       actor: user?.email || 'system',
       metadata: {

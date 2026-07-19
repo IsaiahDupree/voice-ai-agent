@@ -9,10 +9,12 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/campaigns/:id/budget
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const campaignId = params.id;
+    const campaignId = id;
 
     // Get campaign
     const { data: campaign, error: campaignError } = await supabaseAdmin
@@ -68,8 +70,10 @@ export async function GET(
 // PUT /api/campaigns/:id/budget
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { enabled, limit_usd, alert_threshold } = body;
@@ -85,7 +89,7 @@ export async function PUT(
     const { data: campaign } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     // Update budget config
@@ -103,7 +107,7 @@ export async function PUT(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -111,7 +115,7 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      campaign_id: params.id,
+      campaign_id: id,
       budget: data.metadata.budget,
     });
   } catch (error: any) {
@@ -127,10 +131,12 @@ export async function PUT(
 // Check if budget is exhausted and pause campaign if needed
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const campaignId = params.id;
+    const campaignId = id;
 
     // Get current budget status (reuse GET logic)
     const statusResponse = await GET(request, { params });

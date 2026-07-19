@@ -12,17 +12,19 @@ import { supabaseAdmin } from '@/lib/supabase';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     // Try to fetch from Cal.com
-    const booking = await calcomClient.getBooking(params.id);
+    const booking = await calcomClient.getBooking(id);
 
     // Also fetch from our database for additional metadata
     const { data: localBooking } = await supabaseAdmin
       .from('voice_agent_bookings')
       .select('*')
-      .eq('booking_id', params.id)
+      .eq('booking_id', id)
       .single();
 
     return NextResponse.json({
@@ -47,8 +49,10 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json().catch(() => ({}));
     const { reason } = body;
@@ -57,11 +61,11 @@ export async function DELETE(
     const { data: currentBooking } = await supabaseAdmin
       .from('voice_agent_bookings')
       .select('metadata')
-      .eq('booking_id', params.id)
+      .eq('booking_id', id)
       .single();
 
     // Cancel in Cal.com
-    await calcomClient.cancelBooking(params.id, reason);
+    await calcomClient.cancelBooking(id, reason);
 
     // Merge cancellation info into metadata
     const updatedMetadata = {
@@ -78,7 +82,7 @@ export async function DELETE(
         updated_at: new Date().toISOString(),
         metadata: updatedMetadata
       })
-      .eq('booking_id', params.id);
+      .eq('booking_id', id);
 
     if (dbError) {
       console.error('Error updating booking status:', dbError);
@@ -87,7 +91,7 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
       message: 'Booking cancelled successfully',
-      booking_id: params.id
+      booking_id: id
     });
   } catch (error: any) {
     console.error('Error cancelling booking:', error);

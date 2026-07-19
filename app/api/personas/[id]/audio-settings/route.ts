@@ -13,8 +13,10 @@ interface AudioSettings {
 // GET /api/personas/:id/audio-settings - Get audio configuration
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -24,7 +26,7 @@ export async function GET(
       .select(
         'id, background_sound_id, background_sound_url, language_override'
       )
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)
@@ -52,8 +54,10 @@ export async function GET(
 // PATCH /api/personas/:id/audio-settings - Update audio configuration
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body: AudioSettings = await request.json()
     const orgId = new URL(request.url).searchParams.get('org_id')
@@ -62,7 +66,7 @@ export async function PATCH(
     let query = supabaseAdmin
       .from('personas')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)
@@ -85,7 +89,7 @@ export async function PATCH(
     const { data: updated, error: updateError } = await supabaseAdmin
       .from('personas')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 

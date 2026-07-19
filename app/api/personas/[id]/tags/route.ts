@@ -6,14 +6,16 @@ import { supabaseAdmin } from '@/lib/supabase'
 // GET /api/personas/:id/tags - Get all tags for a persona
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
 
     // Verify persona exists and belongs to org
-    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -29,7 +31,7 @@ export async function GET(
     const { data: tags, error: tagsError } = await supabaseAdmin
       .from('persona_tags')
       .select('tag, created_at')
-      .eq('persona_id', params.id)
+      .eq('persona_id', id)
       .order('created_at', { ascending: false })
 
     if (tagsError) {
@@ -49,8 +51,10 @@ export async function GET(
 // POST /api/personas/:id/tags - Add a tag to a persona
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { tag } = await request.json()
     const orgId = new URL(request.url).searchParams.get('org_id')
@@ -64,7 +68,7 @@ export async function POST(
     }
 
     // Verify persona exists and belongs to org
-    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -80,7 +84,7 @@ export async function POST(
     const { data: inserted, error: insertError } = await supabaseAdmin
       .from('persona_tags')
       .insert({
-        persona_id: params.id,
+        persona_id: id,
         tag: tag.toLowerCase().trim(),
       })
       .select()

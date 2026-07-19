@@ -5,8 +5,10 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const { notes } = body
@@ -24,7 +26,7 @@ export async function POST(
         notes,
         updated_at: new Date().toISOString(),
       })
-      .eq('call_id', params.id)
+      .eq('call_id', id)
       .select()
       .single()
 
@@ -32,7 +34,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      call_id: params.id,
+      call_id: id,
       notes: data.notes,
     })
   } catch (error: any) {
@@ -47,20 +49,22 @@ export async function POST(
 // Get notes
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data, error } = await supabaseAdmin
       .from('voice_agent_calls')
       .select('notes')
-      .eq('call_id', params.id)
+      .eq('call_id', id)
       .single()
 
     if (error) throw error
 
     return NextResponse.json({
       success: true,
-      call_id: params.id,
+      call_id: id,
       notes: data?.notes || '',
     })
   } catch (error: any) {
@@ -75,8 +79,10 @@ export async function GET(
 // Delete notes
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data, error } = await supabaseAdmin
       .from('voice_agent_calls')
@@ -84,7 +90,7 @@ export async function DELETE(
         notes: null,
         updated_at: new Date().toISOString(),
       })
-      .eq('call_id', params.id)
+      .eq('call_id', id)
       .select()
       .single()
 
@@ -92,7 +98,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      call_id: params.id,
+      call_id: id,
       notes: null,
     })
   } catch (error: any) {

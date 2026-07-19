@@ -17,8 +17,10 @@ export interface CampaignFilters {
 // F0268: Set or update contact filters for a campaign
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const filters: CampaignFilters = body.filters
@@ -34,7 +36,7 @@ export async function PUT(
     const { data: campaign, error: fetchError } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (fetchError || !campaign) {
@@ -51,7 +53,7 @@ export async function PUT(
         contact_filters: filters,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -74,13 +76,15 @@ export async function PUT(
 // F0268: Get campaign filters
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data: campaign, error } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('contact_filters')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (error || !campaign) {

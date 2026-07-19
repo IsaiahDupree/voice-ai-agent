@@ -12,8 +12,10 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const {
@@ -35,7 +37,7 @@ export async function POST(
           timezone
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (bookingError || !booking) {
@@ -149,21 +151,23 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     // Fetch all reminders for this booking
     const { data: reminders, error } = await supabaseAdmin
       .from('booking_reminders')
       .select('*')
-      .eq('booking_id', params.id)
+      .eq('booking_id', id)
       .order('scheduled_for', { ascending: false });
 
     if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      booking_id: params.id,
+      booking_id: id,
       reminders: reminders || [],
       total_reminders: reminders?.length || 0,
     });
@@ -182,8 +186,10 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url);
     const reminderId = searchParams.get('reminder_id');
@@ -203,7 +209,7 @@ export async function DELETE(
         canceled_at: new Date().toISOString(),
       })
       .eq('id', reminderId)
-      .eq('booking_id', params.id)
+      .eq('booking_id', id)
       .select()
       .single();
 

@@ -4,13 +4,15 @@ import { supabaseAdmin } from '@/lib/supabase'
 // Get campaign details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data, error } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (error) throw error
@@ -19,7 +21,7 @@ export async function GET(
     const { count } = await supabaseAdmin
       .from('voice_agent_campaign_contacts')
       .select('*', { count: 'exact', head: true })
-      .eq('campaign_id', params.id)
+      .eq('campaign_id', id)
 
     return NextResponse.json({
       success: true,
@@ -40,8 +42,10 @@ export async function GET(
 // Update campaign
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const updates = {
@@ -52,7 +56,7 @@ export async function PATCH(
     const { data, error } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .update(updates)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -74,13 +78,15 @@ export async function PATCH(
 // Delete campaign
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { error } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) throw error
 

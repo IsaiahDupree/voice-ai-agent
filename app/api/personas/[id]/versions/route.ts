@@ -16,8 +16,10 @@ interface PersonaVersion {
 // GET /api/personas/:id/versions - Get all versions of a persona
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -25,7 +27,7 @@ export async function GET(
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Verify persona exists
-    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -41,7 +43,7 @@ export async function GET(
     const { data: changes, error: changesError, count } = await supabaseAdmin
       .from('persona_changelog')
       .select('created_at, changed_by', { count: 'exact' })
-      .eq('persona_id', params.id)
+      .eq('persona_id', id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -53,13 +55,13 @@ export async function GET(
     const versions = changes?.map((change, idx) => ({
       id: `v${idx + 1}`,
       version: idx + 1,
-      persona_id: params.id,
+      persona_id: id,
       created_at: change.created_at,
       created_by: change.changed_by,
     })) || []
 
     return NextResponse.json({
-      persona_id: params.id,
+      persona_id: id,
       versions,
       pagination: {
         total: count || 0,
@@ -77,14 +79,15 @@ export async function GET(
 // GET specific version - handled via query param ?version=X in main GET above
 async function GET_SPECIFIC(
   request: NextRequest,
-  { params }: { params: { id: string; version: string } }
+  { params }: { params: Promise<{ id: string; version: string }> }
 ) {
   try {
+    const { id, version } = await params;
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
 
     // Verify persona exists
-    let verifyQuery = supabaseAdmin.from('personas').select('*').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('*').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -98,8 +101,8 @@ async function GET_SPECIFIC(
 
     // Would fetch specific version from versions table
     return NextResponse.json({
-      persona_id: params.id,
-      version: params.version,
+      persona_id: id,
+      version: version,
       snapshot: persona,
     })
   } catch (error: any) {
@@ -111,8 +114,10 @@ async function GET_SPECIFIC(
 // POST /api/personas/:id/versions - Create a new version (snapshot)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const { searchParams } = new URL(request.url)
@@ -120,7 +125,7 @@ export async function POST(
     const { description } = body
 
     // Verify persona exists
-    let verifyQuery = supabaseAdmin.from('personas').select('*').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('*').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -141,7 +146,7 @@ export async function POST(
       version: {
         id: `v${versionNumber}`,
         version: versionNumber,
-        persona_id: params.id,
+        persona_id: id,
         snapshot: persona,
         description,
         created_at: new Date().toISOString(),

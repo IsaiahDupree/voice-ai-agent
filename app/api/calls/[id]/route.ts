@@ -4,10 +4,12 @@ import { getCall, endCall } from '@/lib/vapi'
 // F0044: Get call API - returns call details with status, duration, cost, recording, transcript
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const call = await getCall(params.id)
+    const call = await getCall(id)
     // Call object includes:
     // F0046: status field (queued|ringing|in-progress|ended)
     // F0047: duration field (seconds)
@@ -27,10 +29,12 @@ export async function GET(
 // F0043: End call API - terminates active call within 2s
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    await endCall(params.id)
+    await endCall(id)
     return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('Error ending call:', error)

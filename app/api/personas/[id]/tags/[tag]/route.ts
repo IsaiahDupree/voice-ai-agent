@@ -6,15 +6,17 @@ import { supabaseAdmin } from '@/lib/supabase'
 // DELETE /api/personas/:id/tags/:tag - Remove a tag
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; tag: string } }
+  { params }: { params: Promise<{ id: string; tag: string }> }
 ) {
+    const { id, tag } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
-    const decodedTag = decodeURIComponent(params.tag).toLowerCase()
+    const decodedTag = decodeURIComponent(tag).toLowerCase()
 
     // Verify persona exists and belongs to org
-    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -30,7 +32,7 @@ export async function DELETE(
     const { error: deleteError } = await supabaseAdmin
       .from('persona_tags')
       .delete()
-      .eq('persona_id', params.id)
+      .eq('persona_id', id)
       .eq('tag', decodedTag)
 
     if (deleteError) {

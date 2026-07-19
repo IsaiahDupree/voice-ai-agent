@@ -9,13 +9,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/campaigns/:id/tags
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data: campaign, error } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('id, name, metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -23,7 +25,7 @@ export async function GET(
     const tags = campaign.metadata?.tags || [];
 
     return NextResponse.json({
-      campaign_id: params.id,
+      campaign_id: id,
       campaign_name: campaign.name,
       tags,
     });
@@ -39,8 +41,10 @@ export async function GET(
 // POST /api/campaigns/:id/tags - Add tags
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { tags } = body;
@@ -56,7 +60,7 @@ export async function POST(
     const { data: campaign } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     const existingTags = campaign?.metadata?.tags || [];
@@ -72,7 +76,7 @@ export async function POST(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -80,7 +84,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      campaign_id: params.id,
+      campaign_id: id,
       tags: data.metadata.tags,
     });
   } catch (error: any) {
@@ -95,8 +99,10 @@ export async function POST(
 // DELETE /api/campaigns/:id/tags - Remove tags
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url);
     const tagsToRemove = searchParams.get('tags')?.split(',') || [];
@@ -112,7 +118,7 @@ export async function DELETE(
     const { data: campaign } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     const existingTags = campaign?.metadata?.tags || [];
@@ -128,7 +134,7 @@ export async function DELETE(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -136,7 +142,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      campaign_id: params.id,
+      campaign_id: id,
       tags: data.metadata.tags,
     });
   } catch (error: any) {

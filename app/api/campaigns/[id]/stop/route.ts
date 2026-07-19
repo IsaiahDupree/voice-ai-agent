@@ -9,8 +9,10 @@ import { logCampaignAction } from '@/lib/campaign-audit'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     // F0253: RBAC check - require admin role
     const user = await getUserFromRequest(request)
@@ -21,7 +23,7 @@ export async function POST(
     const { data: campaign, error: fetchError } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (fetchError) throw fetchError
@@ -44,7 +46,7 @@ export async function POST(
           paused_at: new Date().toISOString(),
         },
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -52,7 +54,7 @@ export async function POST(
 
     // F0254: Log campaign stop action to audit log
     await logCampaignAction({
-      campaign_id: parseInt(params.id),
+      campaign_id: parseInt(id),
       action: 'paused',
       actor: user?.email || 'system',
       metadata: {

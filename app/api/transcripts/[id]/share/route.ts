@@ -6,10 +6,12 @@ import { randomBytes } from 'crypto'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const transcriptId = parseInt(params.id)
+    const transcriptId = parseInt(id)
     const body = await request.json()
     const { expires_in_days = 7, password_protected = false } = body
 
@@ -76,10 +78,12 @@ export async function POST(
 // Get share link info
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const transcriptId = parseInt(params.id)
+    const transcriptId = parseInt(id)
 
     // Get active share links for this transcript
     const { data: shareLinks, error } = await supabaseAdmin

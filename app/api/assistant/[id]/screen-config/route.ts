@@ -9,13 +9,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/assistant/:id/screen-config
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data: persona, error } = await supabaseAdmin
       .from('personas')
       .select('id, name, metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -27,7 +29,7 @@ export async function GET(
     };
 
     return NextResponse.json({
-      assistant_id: params.id,
+      assistant_id: id,
       screen_config: screenConfig,
     });
   } catch (error: any) {
@@ -42,8 +44,10 @@ export async function GET(
 // PUT /api/assistant/:id/screen-config
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { enabled, questions, summary_template } = body;
@@ -60,7 +64,7 @@ export async function PUT(
     const { data: persona } = await supabaseAdmin
       .from('personas')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     // Update with screen config
@@ -79,7 +83,7 @@ export async function PUT(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -87,7 +91,7 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      assistant_id: params.id,
+      assistant_id: id,
       screen_config: data.metadata.screen_config,
     });
   } catch (error: any) {

@@ -5,10 +5,12 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const transcriptId = parseInt(params.id)
+    const transcriptId = parseInt(id)
     const { searchParams } = new URL(request.url)
     const format = searchParams.get('format') || 'txt' // txt, json, or md
 

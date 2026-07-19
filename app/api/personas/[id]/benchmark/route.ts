@@ -17,8 +17,10 @@ interface BenchmarkData {
 // GET /api/personas/:id/benchmark - Compare persona performance to org average
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -27,7 +29,7 @@ export async function GET(
     let query = supabaseAdmin
       .from('personas')
       .select('id, call_count, org_id')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)
@@ -42,7 +44,7 @@ export async function GET(
     // Get org-wide averages from call logs
     // This would aggregate call data - for now return mock data
     const mockBenchmark: BenchmarkData = {
-      persona_id: params.id,
+      persona_id: id,
       avg_call_duration: 245, // seconds
       total_calls: persona.call_count || 0,
       success_rate: 0.72, // 72%
@@ -53,7 +55,7 @@ export async function GET(
     }
 
     return NextResponse.json({
-      persona_id: params.id,
+      persona_id: id,
       benchmark: mockBenchmark,
       insights: [
         {

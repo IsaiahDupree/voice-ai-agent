@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const { data: bookings, error } = await query
 
     // F005: Graceful fallback for missing column
-    if (error?.message?.includes('does not exist') || error?.message?.includes('start_time')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.message?.includes('start_time')) {
       console.warn('[Analytics Bookings] Schema error detected, returning graceful fallback:', error);
       return NextResponse.json({
         success: true,
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     // F005: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.message?.includes('column')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.message?.includes('column')) {
       const endDate = new Date();
       const startDate = new Date();
       const days = parseInt(new URL(error?.request?.url || '').searchParams.get('days') || '30');

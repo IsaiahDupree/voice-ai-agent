@@ -5,8 +5,10 @@ import { vapiClient } from '@/lib/vapi'
 // F0781: Persona clone - Clone existing persona
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const { name_suffix, org_id } = body
@@ -15,7 +17,7 @@ export async function POST(
     let query = supabaseAdmin
       .from('personas')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (org_id) {
       query = query.eq('org_id', org_id)
@@ -77,7 +79,7 @@ export async function POST(
         vapi_assistant_id: vapiAssistantId,
         active: true,
         org_id: org_id || existingPersona.org_id || null,
-        cloned_from: params.id, // Track original persona
+        cloned_from: id, // Track original persona
       })
       .select()
       .single()

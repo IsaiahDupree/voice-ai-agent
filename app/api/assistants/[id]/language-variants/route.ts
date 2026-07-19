@@ -33,10 +33,10 @@ interface LanguageVariant {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: baseAssistantId } = params;
+    const { id: baseAssistantId } = await params;
     const searchParams = request.nextUrl.searchParams;
     const tenantId = searchParams.get('tenant_id') || 'default';
 
@@ -86,10 +86,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: baseAssistantId } = params;
+    const { id: baseAssistantId } = await params;
     const body = await request.json();
 
     const {
@@ -199,10 +199,10 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: baseAssistantId } = params;
+    const { id: baseAssistantId } = await params;
     const searchParams = request.nextUrl.searchParams;
     const languageCode = searchParams.get('language_code');
     const tenantId = searchParams.get('tenant_id') || 'default';

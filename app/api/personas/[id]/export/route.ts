@@ -4,8 +4,10 @@ import { supabaseAdmin } from '@/lib/supabase'
 // F0797: Persona export - Export persona config as JSON
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -13,7 +15,7 @@ export async function GET(
     let query = supabaseAdmin
       .from('personas')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       query = query.eq('org_id', orgId)

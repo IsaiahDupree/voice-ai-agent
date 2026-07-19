@@ -9,13 +9,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/campaigns/:id/priority-scoring
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data: campaign, error } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('id, name, metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -26,7 +28,7 @@ export async function GET(
     };
 
     return NextResponse.json({
-      campaign_id: params.id,
+      campaign_id: id,
       priority_scoring: scoringConfig,
     });
   } catch (error: any) {
@@ -41,8 +43,10 @@ export async function GET(
 // PUT /api/campaigns/:id/priority-scoring
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { enabled, rules } = body;
@@ -68,7 +72,7 @@ export async function PUT(
     const { data: campaign } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     // Update with priority scoring config
@@ -84,7 +88,7 @@ export async function PUT(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -92,12 +96,12 @@ export async function PUT(
 
     // Recalculate scores for all contacts if enabled
     if (enabled && rules && rules.length > 0) {
-      await recalculateContactScores(params.id, rules);
+      await recalculateContactScores(id, rules);
     }
 
     return NextResponse.json({
       success: true,
-      campaign_id: params.id,
+      campaign_id: id,
       priority_scoring: data.metadata.priority_scoring,
     });
   } catch (error: any) {

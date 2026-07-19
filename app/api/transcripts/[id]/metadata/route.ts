@@ -11,8 +11,10 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     // Fetch transcript with call and booking data
     const { data: transcript, error } = await supabaseAdmin
@@ -37,7 +39,7 @@ export async function GET(
           )
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error || !transcript) {
@@ -100,8 +102,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { booking_id, booking_duration_minutes } = body;
@@ -117,7 +121,7 @@ export async function PUT(
     const { data: transcript, error: fetchError } = await supabaseAdmin
       .from('voice_agent_transcripts')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (fetchError || !transcript) {
@@ -139,7 +143,7 @@ export async function PUT(
     const { data, error: updateError } = await supabaseAdmin
       .from('voice_agent_transcripts')
       .update({ metadata: updatedMetadata })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 

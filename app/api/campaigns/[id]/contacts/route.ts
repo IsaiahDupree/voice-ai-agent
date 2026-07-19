@@ -7,8 +7,10 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json()
     const { contacts } = body // Array of { phone, name, email, metadata }
@@ -77,7 +79,7 @@ export async function POST(
     const { data: existingCampaignContacts } = await supabaseAdmin
       .from('voice_agent_campaign_contacts')
       .select('contact_id')
-      .eq('campaign_id', params.id)
+      .eq('campaign_id', id)
 
     const existingContactIds = new Set(
       existingCampaignContacts?.map((c) => c.contact_id) || []
@@ -87,7 +89,7 @@ export async function POST(
     const campaignContacts = contactRecords
       .filter((c) => !existingContactIds.has(c.id))
       .map((contact) => ({
-        campaign_id: parseInt(params.id),
+        campaign_id: parseInt(id),
         contact_id: contact.id,
         status: 'pending',
         attempts: 0,
@@ -135,8 +137,10 @@ export async function POST(
 // List campaign contacts
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
@@ -147,7 +151,7 @@ export async function GET(
         *,
         contact:voice_agent_contacts(*)
       `)
-      .eq('campaign_id', params.id)
+      .eq('campaign_id', id)
       .order('created_at', { ascending: false })
 
     if (status) {

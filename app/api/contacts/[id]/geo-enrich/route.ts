@@ -10,10 +10,12 @@ import { getPhoneGeoData } from '@/lib/phone-geo';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const contactId = params.id;
+    const contactId = id;
 
     // Get contact
     const { data: contact, error: fetchError } = await supabaseAdmin
@@ -88,10 +90,12 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const contactId = params.id;
+    const contactId = id;
 
     const { data: contact, error } = await supabaseAdmin
       .from('voice_agent_contacts')

@@ -7,10 +7,12 @@ import { analyzeTranscript, getTranscriptAnalysis } from '@/lib/transcript-analy
 // Get existing analysis or trigger new analysis
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const transcriptId = parseInt(params.id)
+    const transcriptId = parseInt(id)
 
     // Check if analysis already exists
     let analysis = await getTranscriptAnalysis(transcriptId)
@@ -50,10 +52,12 @@ export async function GET(
 // Trigger re-analysis with custom competitors list
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const transcriptId = parseInt(params.id)
+    const transcriptId = parseInt(id)
     const body = await request.json()
     const { competitors } = body
 

@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
       .single()
 
     // F013: Graceful fallback for schema errors
-    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+    if (error?.code === 'PGRST204' || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
       console.warn('[Handoff Config] Schema error detected, returning graceful fallback:', error)
       return NextResponse.json({
         assistant_id: assistantId,
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(data)
   } catch (error: any) {
     // F013: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.code === 'PGRST204') {
       const assistantId = new URL(error?.request?.url || '').searchParams.get('assistant_id') || 'default';
       console.warn('[Handoff Config] Schema error caught in try/catch:', error)
       return NextResponse.json({
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
         .single()
 
       // F013: Graceful fallback for schema errors
-      if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      if (error?.code === 'PGRST204' || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
         console.warn('[Handoff Config] Schema error on update, returning graceful fallback:', error)
         return NextResponse.json({
           success: false,
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
         .single()
 
       // F013: Graceful fallback for schema errors
-      if (error?.code === 'PGRST204' || error?.message?.includes('does not exist')) {
+      if (error?.code === 'PGRST204' || error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find')) {
         console.warn('[Handoff Config] Schema error on insert, returning graceful fallback:', error)
         return NextResponse.json({
           success: false,
@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, config: result })
   } catch (error: any) {
     // F013: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.code === 'PGRST204') {
       console.warn('[Handoff Config] Schema error caught in try/catch:', error)
       return NextResponse.json({
         success: false,

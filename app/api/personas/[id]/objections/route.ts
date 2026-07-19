@@ -49,14 +49,16 @@ const DEFAULT_OBJECTIONS = [
 // GET /api/personas/:id/objections - Get objection handlers
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
 
     // Verify persona exists
-    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -71,10 +73,10 @@ export async function GET(
     // Try to get custom objections from database (would need persona_objections table)
     // For now, return default objections
     return NextResponse.json({
-      persona_id: params.id,
+      persona_id: id,
       objections: DEFAULT_OBJECTIONS.map((obj, idx) => ({
         id: `default-${idx}`,
-        persona_id: params.id,
+        persona_id: id,
         ...obj,
         created_at: new Date().toISOString(),
       })),
@@ -89,8 +91,10 @@ export async function GET(
 // POST /api/personas/:id/objections - Add objection handler
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body: ObjectionRequest = await request.json()
     const { searchParams } = new URL(request.url)
@@ -105,7 +109,7 @@ export async function POST(
     }
 
     // Verify persona exists
-    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', params.id)
+    let verifyQuery = supabaseAdmin.from('personas').select('id').eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -123,7 +127,7 @@ export async function POST(
       message: 'Objection handler added',
       objection: {
         id: `new-${Date.now()}`,
-        persona_id: params.id,
+        persona_id: id,
         ...body,
         created_at: new Date().toISOString(),
       },

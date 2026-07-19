@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     // F006: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.message?.includes('table')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.message?.includes('table')) {
       console.warn('[Analytics Campaigns] Schema error caught in try/catch:', error);
       return NextResponse.json({
         totalCampaigns: 0,

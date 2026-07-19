@@ -11,10 +11,12 @@ import { sendCampaignBatchSMS } from '@/lib/sms-campaign'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const campaignId = parseInt(params.id, 10)
+    const campaignId = parseInt(id, 10)
 
     if (isNaN(campaignId)) {
       return NextResponse.json(

@@ -17,10 +17,10 @@ import {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: tenantId } = params
+    const { id: tenantId } = await params
     const body = await request.json()
     const { name, scopes, expires_in_days } = body
 
@@ -77,10 +77,10 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: tenantId } = params
+    const { id: tenantId } = await params
 
     const apiKeys = await listTenantApiKeys(tenantId)
 
@@ -99,10 +99,10 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: tenantId } = params
+    const { id: tenantId } = await params
     const { searchParams } = new URL(request.url)
     const keyId = searchParams.get('key_id')
 

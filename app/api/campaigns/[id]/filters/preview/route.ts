@@ -112,14 +112,16 @@ function applyFilters(contacts: any[], filters: CampaignFilters): { included: an
 // F0268: Preview filtered contacts
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     // Fetch campaign and filters
     const { data: campaign, error: campaignError } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('contact_filters')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (campaignError || !campaign) {
@@ -138,7 +140,7 @@ export async function GET(
         *,
         contact:voice_agent_contacts(*)
       `)
-      .eq('campaign_id', params.id)
+      .eq('campaign_id', id)
       .eq('status', 'pending')
 
     if (contactsError) throw contactsError

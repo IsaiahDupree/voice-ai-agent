@@ -11,10 +11,12 @@ import { supabaseAdmin } from '@/lib/supabase'
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { phone: string } }
+  { params }: { params: Promise<{ phone: string }> }
 ) {
+    const { phone } = await params;
+
   try {
-    const phone = params.phone
+
 
     if (!phone) {
       return NextResponse.json(

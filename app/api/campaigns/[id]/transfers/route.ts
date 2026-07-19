@@ -30,8 +30,10 @@ interface TransferRecord {
 // GET /api/campaigns/:id/transfers - Get transfer history
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { searchParams } = new URL(request.url)
     const orgId = searchParams.get('org_id')
@@ -42,7 +44,7 @@ export async function GET(
     let verifyQuery = supabaseAdmin
       .from('campaigns')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -57,7 +59,7 @@ export async function GET(
     // Get transfers from call_transfers table (would need to be created)
     // For now, return empty list with structure
     return NextResponse.json({
-      campaign_id: params.id,
+      campaign_id: id,
       transfers: [],
       pagination: {
         total: 0,
@@ -81,8 +83,10 @@ export async function GET(
 // POST /api/campaigns/:id/transfers - Initiate a transfer
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body: TransferRequest = await request.json()
     const { searchParams } = new URL(request.url)
@@ -96,7 +100,7 @@ export async function POST(
     let verifyQuery = supabaseAdmin
       .from('campaigns')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (orgId) {
       verifyQuery = verifyQuery.eq('org_id', orgId)
@@ -112,7 +116,7 @@ export async function POST(
     const transfer: TransferRecord = {
       id: `transfer-${Date.now()}`,
       call_id: body.call_id,
-      campaign_id: params.id,
+      campaign_id: id,
       reason: body.reason,
       transferred_at: new Date().toISOString(),
       target_rep_id: body.target_rep_id,

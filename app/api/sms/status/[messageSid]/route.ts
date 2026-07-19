@@ -5,10 +5,10 @@ import { checkSMSDeliveryStatus, updateSMSDeliveryStatus } from '@/lib/sms-deliv
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { messageSid: string } }
+  { params }: { params: Promise<{ messageSid: string }> }
 ) {
   try {
-    const { messageSid } = params
+    const { messageSid } = await params
 
     if (!messageSid) {
       return NextResponse.json(
@@ -37,10 +37,10 @@ export async function GET(
 // F0413: POST to update database with latest status
 export async function POST(
   request: NextRequest,
-  { params }: { params: { messageSid: string } }
+  { params }: { params: Promise<{ messageSid: string }> }
 ) {
   try {
-    const { messageSid } = params
+    const { messageSid } = await params
 
     if (!messageSid) {
       return NextResponse.json(

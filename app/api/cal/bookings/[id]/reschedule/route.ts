@@ -13,8 +13,10 @@ import { supabaseAdmin } from '@/lib/supabase';
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { newStart, startTime } = body;
@@ -41,12 +43,12 @@ export async function PATCH(
     const { data: currentBooking } = await supabaseAdmin
       .from('voice_agent_bookings')
       .select('metadata, start_time')
-      .eq('booking_id', params.id)
+      .eq('booking_id', id)
       .single();
 
     // Reschedule in Cal.com
     const updatedBooking = await calcomClient.rescheduleBooking(
-      params.id,
+      id,
       newStartTime
     );
 
@@ -66,7 +68,7 @@ export async function PATCH(
         updated_at: new Date().toISOString(),
         metadata: updatedMetadata
       })
-      .eq('booking_id', params.id);
+      .eq('booking_id', id);
 
     if (dbError) {
       console.error('Error updating booking in database:', dbError);

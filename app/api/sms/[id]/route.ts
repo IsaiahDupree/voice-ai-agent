@@ -15,10 +15,12 @@ import { supabaseAdmin } from '@/lib/supabase'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
-    const smsId = parseInt(params.id)
+    const smsId = parseInt(id)
 
     if (isNaN(smsId)) {
       return NextResponse.json(

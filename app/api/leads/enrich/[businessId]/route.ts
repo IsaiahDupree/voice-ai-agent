@@ -122,10 +122,12 @@ Be specific and concise. If information is not evident, use null or empty arrays
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { businessId: string } }
+  { params }: { params: Promise<{ businessId: string }> }
 ) {
+    const { businessId } = await params;
+
   try {
-    const { businessId } = params
+    const { businessId } = await params
 
     // Fetch business record
     const { data: business, error: fetchError } = await supabaseAdmin
@@ -221,12 +223,12 @@ export async function POST(
     console.error('[Lead Enrich API] Error:', error)
 
     // Log crawl failure
-    if (params.businessId) {
+    if (businessId) {
       await supabaseAdmin
         .from('localreach_business_research')
         .upsert(
           {
-            business_id: params.businessId,
+            business_id: businessId,
             crawl_status: 'failed',
             crawl_error: error.message,
           },

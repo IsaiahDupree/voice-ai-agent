@@ -9,13 +9,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // GET /api/campaigns/:id/recurring
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const { data: campaign, error } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('id, name, metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -27,7 +29,7 @@ export async function GET(
     };
 
     return NextResponse.json({
-      campaign_id: params.id,
+      campaign_id: id,
       recurring: recurringConfig,
     });
   } catch (error: any) {
@@ -42,8 +44,10 @@ export async function GET(
 // PUT /api/campaigns/:id/recurring
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   try {
     const body = await request.json();
     const { enabled, frequency, time, days_of_week } = body;
@@ -82,7 +86,7 @@ export async function PUT(
     const { data: campaign } = await supabaseAdmin
       .from('voice_agent_campaigns')
       .select('metadata')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     // Update with recurring config
@@ -102,7 +106,7 @@ export async function PUT(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -110,7 +114,7 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      campaign_id: params.id,
+      campaign_id: id,
       recurring: data.metadata.recurring,
     });
   } catch (error: any) {

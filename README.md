@@ -130,11 +130,84 @@ curl -X POST http://localhost:3000/api/vapi/assistant \
 
 See `PROGRESS.md` for detailed status.
 
+## Common Use Cases
+
+### 1. **Sales Outbound Calling**
+Automate outbound calls to leads, qualify prospects, and schedule meetings using the Voice AI Agent integrated with Cal.com for appointment booking. Perfect for B2B lead generation and follow-up calling.
+
+### 2. **Customer Support Center**
+24/7 inbound support handling with automatic CRM context loading, call transfers to human agents for complex issues, and comprehensive call logging for compliance and training.
+
+### 3. **Lead Qualification**
+Intelligent voice-based qualification of leads with natural conversation flow, automatic follow-up SMS via Twilio, and detailed call transcripts for CRM integration.
+
+### 4. **Appointment Scheduling**
+Voice-native calendar integration via Cal.com API enables customers to book appointments directly through voice conversation, eliminating manual coordination.
+
+### 5. **Customer Surveys**
+Automated voice surveys with dynamic branching based on responses, sentiment analysis, and automatic report generation.
+
+## Troubleshooting
+
+### Health check fails
+- Ensure all API keys are set in `.env.local`
+- Check Supabase project connectivity at https://app.supabase.com
+- Verify Vapi.ai account is active and API key is valid
+- Test individual service connections using `/api/health` endpoint
+
+### Calls not recording
+- Check Supabase `call_logs` table permissions
+- Verify `SUPABASE_SERVICE_ROLE_KEY` is set correctly
+- Check database connection in Vercel logs
+- Ensure Vapi webhook is configured to hit `/api/vapi/webhook`
+
+### Voice recognition not working
+- Verify Deepgram API is available (check Vapi.ai dashboard)
+- Ensure microphone permissions are granted in browser
+- Check WebRTC connection status in browser console
+- Test with different LLM provider (GPT-4o vs Claude Sonnet)
+
+### SMS/Email not sending
+- Verify Twilio credentials in `.env.local`
+- Check Twilio account has sufficient credits
+- Review Twilio logs for delivery failures
+- Ensure phone numbers are in E.164 format (+1234567890)
+
+### Calendar booking failures
+- Verify Cal.com API key and event type ID
+- Check Cal.com calendar availability
+- Ensure timezone is set correctly in assistant config
+- Test Cal.com connection manually via dashboard
+
+## Performance
+
+- Voice latency: < 500ms from speech input to LLM response
+- Call setup time: < 2 seconds
+- Database query time: < 100ms for call logs
+- API response time: < 500ms for health checks and assistant management
+
+## Architecture Patterns
+
+- **Event-driven**: Vapi webhooks trigger database updates and integrations
+- **Async processing**: Transcription and SMS sending happen asynchronously
+- **Composable assistants**: Mix and match LLM, voice, and function tools
+- **Audit logging**: All call events immutably logged for compliance
+
 ## Deploy to Vercel
 
 ```bash
 npx vercel --yes --prod
 ```
+
+Automatic deployment on git push to main branch. All environment variables configured in Vercel dashboard.
+
+## Support
+
+For issues, consult:
+- [Vapi.ai Docs](https://docs.vapi.ai/)
+- [Supabase Docs](https://supabase.com/docs)
+- [Cal.com API Docs](https://cal.com/docs)
+- [Twilio Docs](https://www.twilio.com/docs)
 
 ## License
 

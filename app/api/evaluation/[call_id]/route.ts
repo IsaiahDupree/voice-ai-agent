@@ -9,10 +9,10 @@ import { getEvaluation } from '@/lib/call-evaluator';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { call_id: string } }
+  { params }: { params: Promise<{ call_id: string }> }
 ) {
   try {
-    const { call_id } = params;
+    const { call_id } = await params;
 
     const evaluation = await getEvaluation(call_id);
 

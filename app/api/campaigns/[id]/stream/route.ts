@@ -11,9 +11,11 @@ import { supabaseAdmin } from '@/lib/supabase';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const campaignId = parseInt(params.id, 10);
+    const { id } = await params;
+
+  const campaignId = parseInt(id, 10);
 
   if (isNaN(campaignId)) {
     return new Response('Invalid campaign ID', { status: 400 });

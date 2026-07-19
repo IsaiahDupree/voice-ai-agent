@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     // F014: Graceful fallback for schema-related errors
-    if (error?.message?.includes('does not exist') || error?.code === 'PGRST204') {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('schema cache') || error?.message?.includes('Could not find') || error?.code === 'PGRST204') {
       console.warn('[KB List Documents] Schema error detected, returning graceful fallback:', error);
       return NextResponse.json({
         documents: []
