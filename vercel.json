@@ -1,0 +1,61 @@
+{
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/monitoring/error-rate",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/monitoring/uptime",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/monitoring/performance",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/reports/daily",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/reports/weekly",
+      "schedule": "0 8 * * 1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "DB_POOL_SIZE": "10",
+    "NEXT_PUBLIC_APP_URL": "https://voice-ai-agent.vercel.app"
+  }
+}
