@@ -1,0 +1,101 @@
+{
+  "slug": "business-context-engine",
+  "features": [
+    {
+      "id": "BCE-001",
+      "name": "Supabase Migration — business_profiles + business_pages tables",
+      "category": "database",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-002",
+      "name": "Custom Web Crawler (fetch + cheerio) — no Firecrawl",
+      "category": "backend",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-003",
+      "name": "LLM Extractor — BusinessProfile JSON via Claude claude-opus-4-6",
+      "category": "backend",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-004",
+      "name": "Brief Compressor — ContextResponse ≤600 words",
+      "category": "backend",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-005",
+      "name": "POST /api/business-context/crawl — Queue crawl job",
+      "category": "api",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-006",
+      "name": "GET /api/business-context/status — Poll job status",
+      "category": "api",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-007",
+      "name": "GET /api/business-context — Vapi tool endpoint (brief)",
+      "category": "api",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-008",
+      "name": "GET /api/business-context/full — Full profile endpoint",
+      "category": "api",
+      "priority": 2,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-009",
+      "name": "POST /api/business-context/webhook — Vapi post-call handler → call_outcomes table",
+      "category": "api",
+      "priority": 2,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-010",
+      "name": "Vapi Session Builder — buildAssistantOverrides + get_business_context tool def",
+      "category": "integration",
+      "priority": 1,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-011",
+      "name": "Dashboard page /dashboard/business-context",
+      "category": "frontend",
+      "priority": 2,
+      "passes": true,
+      "status": "done"
+    },
+    {
+      "id": "BCE-012",
+      "name": "Integration Tests",
+      "category": "testing",
+      "priority": 2,
+      "passes": true,
+      "status": "done"
+    }
+  ]
+}

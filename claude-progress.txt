@@ -1,0 +1,105 @@
+VOICE AI AGENT — AUTONOMOUS CODING SESSION LOG
+===============================================
+Project: voice-ai-agent
+Path: /Users/isaiahdupree/Documents/Software/tech-demos/voice-ai-agent
+Initialized: 2026-04-04
+
+SESSION 1 — INITIALIZER AGENT
+==============================
+Status: IN PROGRESS
+Model: claude-sonnet-4-6
+Date: 2026-04-04
+
+## Project State on Entry
+
+The project has significant prior development (1308/1500 legacy features complete from
+features.json / PROGRESS.md tracking). The new harness feature_list.json defines 75 fresh
+requirements (VAPI-001 through VAPI-075), all starting as passes: false.
+
+Existing passing tests: 803 / 856 (the 53 failing tests are from the old suite and are
+pre-existing failures unrelated to the new VAPI-XXX features).
+
+## VAPI Feature Categories
+
+| Range       | Count | Type        | Target Code                                  |
+|-------------|-------|-------------|----------------------------------------------|
+| VAPI-001-020 | 20   | Unit (UI)   | app/page.tsx + VapiCallButton component      |
+| VAPI-021-040 | 20   | Unit (API)  | app/api/webhooks/vapi/route.ts + lib/vapi.ts |
+| VAPI-041-060 | 20   | Integration | Full route handlers with HTTP stubs + Supabase|
+| VAPI-061-075 | 15   | E2E         | Browser-level tests via RTL + fetch mocking  |
+
+## Test Files Created This Session
+
+1. __tests__/unit/vapi-demo-ui.test.tsx       — VAPI-001 to VAPI-020
+2. __tests__/unit/vapi-webhook-new.test.ts    — VAPI-021 to VAPI-040
+3. __tests__/integration/vapi-core.test.ts    — VAPI-041 to VAPI-060
+4. __tests__/e2e/vapi-browser.test.tsx        — VAPI-061 to VAPI-075
+
+## What Coding Agents Need to Build
+
+### Priority 1 — Demo Page (VAPI-001 to VAPI-020)
+The current app/page.tsx is a static marketing page. It needs:
+- A VapiCallButton component with these states:
+  * idle: blue bg, microphone icon, "Start Call" accessible label
+  * connecting: "Connecting..." text, disabled state
+  * active: "End Call" red bg, visible call timer (MM:SS)
+  * ended: resets to idle, timer to 00:00
+- Live transcript area (aria-live="polite") that updates from vapi.on('message')
+- Speaking indicator (shows on 'speech-start', hides on 'speech-end')
+- Outbound phone number form with:
+  * E.164 validation (+15551234567 valid, 'not-a-phone' invalid)
+  * Auto-format display (5551234567 → (555) 123-4567)
+  * POST to /api/calls/outbound on submit
+- ErrorBoundary wrapping the call UI section
+- Vapi SDK init: vapi.start(assistantId) on call start, vapi.stop() on end call
+
+Files to create/modify:
+  - app/page.tsx — add call UI sections
+  - app/components/VapiCallButton.tsx — call button with state machine
+  - app/hooks/useVapiCall.ts — Vapi SDK event handling hook
+
+### Priority 2 — Webhook Unit Tests (VAPI-021 to VAPI-040)
+Tests exercise app/api/webhooks/vapi/route.ts with mocked supabaseAdmin.
+Most of the route code already exists. Tests verify:
+- HMAC signature validation (valid/invalid)
+- call.started creates DB record
+- call.ended updates with completed/voicemail
+- function-call routes (bookAppointment, sendSMS, lookupContact)
+- PII redaction in transcript handler
+- Blocked number handling
+- Personalized greeting from contact lookup
+- hang/speech-update event handling
+
+### Priority 3 — Integration Tests (VAPI-041 to VAPI-060)
+Tests use real HTTP test servers (http.createServer wrapping route handlers) and
+in-memory Supabase fixture helpers. No production Supabase needed.
+
+### Priority 4 — E2E Tests (VAPI-061 to VAPI-075)
+Browser-level RTL tests that render the full demo page, mock fetch for API calls,
+and verify complete user flows end-to-end.
+
+## Running Tests
+
+  npx jest --testPathPattern="vapi-demo-ui"     # UI unit tests
+  npx jest --testPathPattern="vapi-webhook-new" # Webhook unit tests
+  npx jest --testPathPattern="vapi-core"        # Integration tests
+  npx jest --testPathPattern="vapi-browser"     # E2E tests
+  npx jest                                       # All tests
+
+## Feature Tracking
+
+  node check-features.js    # Show all VAPI-XXX pass/fail status
+  cat feature_list.json     # Raw feature definitions
+
+## Architecture Notes
+
+- Supabase project: ivhfuhxorppptyuofbgq
+- Vapi web SDK: @vapi-ai/web (installed in package.json)
+- Vapi server SDK: @vapi-ai/server-sdk (installed)
+- All tests run in Jest/jsdom environment
+- Test mocks in __tests__/mocks/ (acceptable per project rules)
+
+---
+
+SESSION 2 onwards: Update this file with each session's progress.
+Format: SESSION N — [AGENT TYPE] / [DATE] / Features completed: VAPI-XXX, VAPI-XXX
