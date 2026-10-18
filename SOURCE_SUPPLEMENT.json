@@ -1,0 +1,64 @@
+{
+  "supplements_snapshot": "bdfc282bbc94bb33",
+  "source_roots": [
+    "C:/Users/Isaia/Documents/Coding/VoiceAI/voice-ai-agent"
+  ],
+  "files": {
+    "app/api/analytics/export/pdf/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\analytics\\export\\pdf\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/analytics/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\analytics\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/bookings/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\bookings\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/calls/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\calls\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/campaigns/[id]/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\campaigns\\[id]\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/contacts/[id]/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\contacts\\[id]\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/contacts/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\contacts\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/dnc/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\dnc\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/errors/log/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\errors\\log\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/flows/[id]/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\flows\\[id]\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/packs/[slug]/credentials/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\packs\\[slug]\\credentials\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/packs/[slug]/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\packs\\[slug]\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/personas/[id]/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\personas\\[id]\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    },
+    "app/api/transcripts/[id]/export/route.ts": {
+      "source": "C:\\Users\\Isaia\\Documents\\Coding\\VoiceAI\\voice-ai-agent\\app\\api\\transcripts\\[id]\\export\\route.ts",
+      "reason": "portable authored code absent from staged source selection"
+    }
+  }
+}
